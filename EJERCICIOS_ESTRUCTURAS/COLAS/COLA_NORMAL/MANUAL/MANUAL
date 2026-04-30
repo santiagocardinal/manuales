@@ -1,0 +1,452 @@
+==============================================================
+  MANUAL COMPLETO — ColaListaEnlazada<T>
+  Explicado desde cero, paso a paso
+==============================================================
+
+
+==============================================================
+ 0. ANTES DE TODO — ¿QUÉ ES UNA COLA?
+==============================================================
+
+Una cola (queue) tiene la regla contraria a una pila:
+el PRIMERO que entra es el PRIMERO que sale.
+Se conoce como FIFO: First In, First Out.
+
+Pensalo como la fila del banco:
+  - El que llega primero es el primero en ser atendido.
+  - Los nuevos se ponen al final de la fila.
+  - Solo se atiende (saca) al que está adelante.
+
+Visualmente:
+
+  FRENTE                           FONDO
+    [ Ana ] → [ Luis ] → [ Sofia ] → [ Pedro ]
+      ↑                                  ↑
+   sale por acá                   entra por acá
+
+Esta clase no escribe la estructura desde cero. Extiende
+ListaEnlazada<T> y agrega dos punteros propios:
+  - cabeza  → heredado de ListaEnlazada, apunta al FRENTE (el primero)
+  - cola    → propio de esta clase, apunta al FONDO (el último)
+  - tamano  → contador propio para saber el tamaño en O(1)
+
+Tener "cola" (puntero al último) hace que poneEnCola() sea O(1):
+no tiene que recorrer toda la lista para agregar al final.
+
+
+==============================================================
+ 1. CREAR LA COLA
+==============================================================
+
+Código:
+    ColaListaEnlazada<Alumno> fila = new ColaListaEnlazada<>();
+
+Paso a paso:
+  1. Llama a super() → el constructor de ListaEnlazada pone cabeza = null.
+  2. cola = null    → no hay ningún último nodo.
+  3. tamano = 0     → contador en cero.
+  4. El <Alumno> le dice que solo va a guardar objetos de tipo Alumno.
+
+Devuelve: nada — es un constructor.
+
+
+==============================================================
+ 2. OPERACIONES BÁSICAS DE LA COLA
+==============================================================
+
+--------------------------------------------------------------
+2a. poneEnCola(dato) — agrega un elemento AL FONDO
+--------------------------------------------------------------
+
+Código:
+    fila.poneEnCola(new Alumno("Ana",  20, 8.5));
+    fila.poneEnCola(new Alumno("Luis", 22, 5.9));
+    fila.poneEnCola(new Alumno("Sofia",19, 6.2));
+
+    // estado de la cola:
+    // FRENTE                     FONDO
+    // [ Ana ] → [ Luis ] → [ Sofia ]
+
+Paso a paso:
+  1. Si el dato es null, devuelve false y no hace nada.
+  2. Crea un nuevo Nodo con ese Alumno.
+  3. Si la cola está vacía (esVacio() == true):
+       - cabeza = nuevo  → el nuevo es el primero.
+       - cola = nuevo    → el nuevo también es el último (hay uno solo).
+  4. Si ya hay elementos:
+       - El nodo que era el último (cola) apunta con su siguiente al nuevo.
+       - cola = nuevo → el nuevo pasa a ser el último.
+  5. tamano++ en ambos casos.
+
+NOTA IMPORTANTE: no llama a agregar() de ListaEnlazada. Lo hace
+todo propio para mantener el puntero "cola" actualizado.
+Esto lo hace O(1) — no recorre la lista para llegar al final.
+
+Devuelve: true si lo agregó, false si el dato era null.
+
+--------------------------------------------------------------
+2b. quitaDeCola() — saca y devuelve el elemento del FRENTE
+--------------------------------------------------------------
+
+Código:
+    // fila: [ Ana ] → [ Luis ] → [ Sofia ]
+
+    Alumno primero = fila.quitaDeCola();
+    System.out.println(primero.getNombre()); // "Ana"
+
+    // fila ahora: [ Luis ] → [ Sofia ]
+
+Paso a paso:
+  1. Si la cola está vacía, lanza NoSuchElementException.
+  2. Guarda el dato del nodo cabeza (el primero).
+  3. Avanza cabeza al siguiente nodo.
+  4. tamano--.
+  5. Si tamano llegó a 0, pone cola = null (la cola quedó vacía).
+  6. Devuelve el dato guardado.
+
+LANZA: NoSuchElementException si la cola está vacía.
+       A diferencia de la pila que devuelve null, aquí lanza excepción.
+       Siempre chequeá con vacia() antes de llamar quitaDeCola().
+
+Devuelve: el Alumno del frente (el más antiguo en la cola).
+
+--------------------------------------------------------------
+2c. frente() — mira el frente SIN sacarlo
+--------------------------------------------------------------
+
+Código:
+    // fila: [ Ana ] → [ Luis ] → [ Sofia ]
+
+    Alumno primero = fila.frente();
+    System.out.println(primero.getNombre()); // "Ana"
+
+    // fila sigue igual: [ Ana ] → [ Luis ] → [ Sofia ]
+
+Paso a paso:
+  1. Si la cola está vacía, lanza NoSuchElementException.
+  2. Devuelve cabeza.getDato() — acceso directo, no recorre nada.
+  3. No modifica la cola.
+
+LANZA: NoSuchElementException si la cola está vacía.
+
+Devuelve: el Alumno del frente sin sacarlo.
+
+--------------------------------------------------------------
+2d. vacia() — ¿la cola no tiene elementos?
+--------------------------------------------------------------
+
+Código:
+    if (fila.vacia()) {
+        System.out.println("No hay nadie en la fila");
+    }
+
+Paso a paso:
+  1. Llama a esVacio() — el método heredado de ListaEnlazada.
+  2. Ese método chequea si cabeza == null.
+  3. Si no hay ningún nodo → devuelve true.
+  4. Si hay al menos uno → devuelve false.
+
+NOTA: este método se llama vacia() en la cola (no esVacio() como
+en la lista). Son el mismo chequeo pero con distinto nombre porque
+implementan interfaces distintas (TDACola vs TDALista).
+
+Devuelve: true si está vacía, false si tiene al menos un elemento.
+
+--------------------------------------------------------------
+2e. tamano() — cuántos elementos tiene la cola
+--------------------------------------------------------------
+
+Código:
+    int n = fila.tamano(); // 3 si pusiste Ana, Luis, Sofia
+
+Paso a paso:
+  1. Devuelve directamente el campo "tamano" de la clase.
+  2. No recorre la lista — es O(1).
+  3. Este contador se incrementa en poneEnCola() y
+     se decrementa en quitaDeCola().
+
+DIFERENCIA con ListaEnlazada: la lista contaba recorriendo todos
+los nodos (O(n)). La cola tiene un contador dedicado y lo devuelve
+directo (O(1)).
+
+Devuelve: int con la cantidad de elementos. 0 si está vacía.
+
+--------------------------------------------------------------
+2f. anula() — borra todo
+--------------------------------------------------------------
+
+Código:
+    fila.anula();
+    // fila.vacia() == true
+    // fila.tamano() == 0
+
+Paso a paso:
+  1. Llama a super.vaciar() → pone cabeza = null (heredado).
+  2. Pone cola = null → el puntero al último también queda vacío.
+  3. Pone tamano = 0 → el contador vuelve a cero.
+
+NOTA: el método de la lista se llama vaciar() y el de la cola
+se llama anula(). Internamente anula() usa vaciar() más las
+limpiezas propias de la cola.
+
+Devuelve: nada (void).
+
+
+==============================================================
+ 3. MÉTODOS BLOQUEADOS — LO QUE NO SE PUEDE HACER
+==============================================================
+
+La cola tiene reglas estrictas. No podés insertar ni eliminar
+en posiciones arbitrarias. Si intentás llamar a estos métodos,
+el programa lanza UnsupportedOperationException con un mensaje
+explicando por qué.
+
+Los métodos bloqueados son:
+
+  agregar(int indice, T elem)
+    → "Una cola no permite inserción por índice"
+    → En una cola solo se entra por el fondo, no en el medio.
+
+  quitar(int indice)
+    → "Una cola no permite eliminación por índice"
+    → En una cola solo se sale por el frente.
+
+  eliminar(int indice)
+    → "Una cola no permite eliminación por índice"
+    → Igual que quitar por índice.
+
+  quitar(T elemento)
+    → "Una cola no permite eliminar elementos arbitrarios"
+    → No podés sacar a alguien del medio de la fila.
+
+  eliminar(T elemento)
+    → "Una cola no permite eliminar elementos arbitrarios"
+    → Igual que quitar por elemento.
+
+Código que explota:
+    fila.agregar(1, new Alumno("Pedro", 21, 4.8));
+    // UnsupportedOperationException ← no se puede
+
+    fila.quitar(0);
+    // UnsupportedOperationException ← no se puede,
+    // aunque sea índice 0, en la cola usás quitaDeCola()
+
+--------------------------------------------------------------
+EXCEPCIÓN: agregar(T elem) SÍ funciona
+--------------------------------------------------------------
+
+    fila.agregar(new Alumno("Pedro", 21, 4.8));
+
+Paso a paso:
+  1. Este método SÍ está permitido.
+  2. Internamente redirige a poneEnCola(elem).
+  3. O sea, agregar(T) y poneEnCola(T) hacen exactamente lo mismo.
+  4. Se mantiene para que la cola siga siendo compatible con TDALista.
+
+Devuelve: true si lo agregó, false si el dato era null.
+
+
+==============================================================
+ 4. COMBINACIONES ÚTILES
+==============================================================
+
+--------------------------------------------------------------
+4a. Procesar todos los elementos en orden FIFO
+--------------------------------------------------------------
+
+Problema: quiero procesar todos los alumnos en el orden en que
+          llegaron (primero llegado, primero procesado).
+
+    while (!fila.vacia()) {
+        Alumno a = fila.quitaDeCola();
+        System.out.println(a.getNombre() + ": " + a.getCalificacion());
+    }
+    // imprime en el mismo orden en que se pusieron en la cola
+
+--------------------------------------------------------------
+4b. Ver el frente sin destruir la cola
+--------------------------------------------------------------
+
+Problema: quiero saber quién es el próximo sin atenderlo todavía.
+
+    if (!fila.vacia()) {
+        Alumno siguiente = fila.frente(); // no saca nada
+        System.out.println("Próximo: " + siguiente.getNombre());
+    }
+
+NOTA: siempre chequeá vacia() antes de llamar frente() o
+quitaDeCola(), ya que ambos lanzan excepción si la cola está vacía.
+
+--------------------------------------------------------------
+4c. Cargar alumnos desde archivo a la cola
+--------------------------------------------------------------
+
+Problema: tengo los alumnos en un archivo y quiero cargarlos
+          en orden de llegada.
+
+    // suponiendo que ya tenés la lista de alumnos cargada:
+    ListaEnlazada<Alumno> lista = new ListaEnlazada<>();
+    // ... cargar lista desde archivo ...
+
+    ColaListaEnlazada<Alumno> turno = new ColaListaEnlazada<>();
+    for (int i = 0; i < lista.tamano(); i++) {
+        turno.poneEnCola(lista.obtener(i));
+    }
+    // ahora turno tiene los alumnos en orden de llegada
+
+--------------------------------------------------------------
+4d. Atender a los alumnos de a uno y acumular resultados
+--------------------------------------------------------------
+
+Problema: quiero atender a cada alumno, verificar si aprueba,
+          y guardar los aprobados en una lista.
+
+    ListaEnlazada<Alumno> aprobados = new ListaEnlazada<>();
+
+    while (!fila.vacia()) {
+        Alumno a = fila.quitaDeCola();
+        System.out.println("Atendiendo a: " + a.getNombre());
+        if (a.getCalificacion() >= 6.0) {
+            aprobados.agregar(a);
+        }
+    }
+    System.out.println("Aprobados: " + aprobados.tamano());
+
+--------------------------------------------------------------
+4e. Copiar la cola sin destruirla
+--------------------------------------------------------------
+
+Problema: quiero procesar la cola pero que quede intacta.
+
+    ColaListaEnlazada<Alumno> copia  = new ColaListaEnlazada<>();
+    ColaListaEnlazada<Alumno> aux    = new ColaListaEnlazada<>();
+
+    // paso 1: vaciar fila a aux (y copia al mismo tiempo)
+    while (!fila.vacia()) {
+        Alumno a = fila.quitaDeCola();
+        aux.poneEnCola(a);
+        copia.poneEnCola(a);
+    }
+
+    // paso 2: restaurar fila desde aux
+    while (!aux.vacia()) {
+        fila.poneEnCola(aux.quitaDeCola());
+    }
+
+    // fila restaurada, copia tiene los mismos elementos en el mismo orden
+
+--------------------------------------------------------------
+4f. Contar cuántos alumnos aprobaron sin vaciar la cola
+--------------------------------------------------------------
+
+    ColaListaEnlazada<Alumno> aux = new ColaListaEnlazada<>();
+    int aprobados = 0;
+
+    while (!fila.vacia()) {
+        Alumno a = fila.quitaDeCola();
+        if (a.getCalificacion() >= 6.0) aprobados++;
+        aux.poneEnCola(a);
+    }
+
+    // restaurar
+    while (!aux.vacia()) {
+        fila.poneEnCola(aux.quitaDeCola());
+    }
+
+    System.out.println("Aprobados en cola: " + aprobados);
+
+--------------------------------------------------------------
+4g. Simular turnos: los que no aprobaron vuelven al final
+--------------------------------------------------------------
+
+Problema: los aplazados tienen derecho a una segunda instancia,
+          los mando al fondo de la fila.
+
+    ColaListaEnlazada<Alumno> segunda = new ColaListaEnlazada<>();
+
+    while (!fila.vacia()) {
+        Alumno a = fila.quitaDeCola();
+        if (a.getCalificacion() < 6.0) {
+            segunda.poneEnCola(a); // va a la cola de segunda instancia
+        } else {
+            System.out.println(a.getNombre() + " aprobó.");
+        }
+    }
+
+    System.out.println("Van a segunda instancia: " + segunda.tamano());
+
+
+==============================================================
+ 5. DIFERENCIAS CLAVE RESPECTO A LA PILA
+==============================================================
+
+  PILA (PilaListaEnlazada)         COLA (ColaListaEnlazada)
+  ─────────────────────────────────────────────────────────
+  LIFO: último en entrar,          FIFO: primero en entrar,
+  primero en salir                 primero en salir
+
+  Entra y sale por el TOPE         Entra por el FONDO,
+  (posición 0 de la lista)         sale por el FRENTE
+
+  mete()   → agrega al tope        poneEnCola() → agrega al fondo
+  saca()   → saca del tope         quitaDeCola() → saca del frente
+  tope()   → mira el tope          frente() → mira el frente
+
+  saca()/tope() devuelven null     quitaDeCola()/frente() lanzan
+  si está vacía                    NoSuchElementException si vacía
+
+  tamano() recorre la lista        tamano() devuelve el contador
+  (heredado, O(n))                 propio (O(1))
+
+  vaciar() hereda de lista         anula() limpia cabeza + cola
+                                   + contador
+
+
+==============================================================
+ 6. RESUMEN RÁPIDO — QUÉ DEVUELVE CADA MÉTODO
+==============================================================
+
+  poneEnCola(T)      → boolean   (true si lo agregó, false si null)
+  quitaDeCola()      → T         (el frente — lanza excepción si vacía)
+  frente()           → T         (el frente sin sacarlo — lanza excepción si vacía)
+  vacia()            → boolean   (true si no hay elementos)
+  tamano()           → int       (contador O(1))
+  anula()            → void      (nada, cola queda vacía)
+  agregar(T)         → boolean   (redirige a poneEnCola)
+
+  Métodos bloqueados (lanzan UnsupportedOperationException):
+  agregar(int, T)    → excepción
+  quitar(int)        → excepción
+  eliminar(int)      → excepción
+  quitar(T)          → excepción
+  eliminar(T)        → excepción
+
+
+==============================================================
+ 7. REGLAS DE ORO PARA NO ROMPER NADA
+==============================================================
+
+  1. Siempre chequeá vacia() antes de llamar quitaDeCola() o frente().
+     Si la cola está vacía, ambos lanzan NoSuchElementException
+     y el programa explota. No devuelven null como la pila.
+
+  2. quitaDeCola() DESTRUYE el frente. Si solo querés mirar,
+     usá frente().
+
+  3. No intentés usar quitar(), eliminar(), ni agregar(int, T).
+     Todos están bloqueados y lanzan excepción. En una cola solo
+     se puede entrar por el fondo y salir por el frente.
+
+  4. agregar(T) y poneEnCola(T) hacen exactamente lo mismo.
+     Podés usar cualquiera de los dos.
+
+  5. El orden en que ponés los elementos importa MUCHO.
+     FIFO: el primero que entra es el primero que sale.
+
+  6. tamano() en la cola es O(1) (usa contador propio).
+     tamano() en la lista es O(n) (recorre los nodos).
+     Si heredás métodos de lista dentro de la cola, algunos
+     podrían usar el tamano() lento — usá siempre el de la
+     instancia ColaListaEnlazada para aprovechar el O(1).
+
+==============================================================

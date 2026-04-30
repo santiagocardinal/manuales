@@ -1,0 +1,16 @@
+EJERCICIO 2 — Diferencia de conjuntos
+📌 Consigna
+
+Dado dos conjuntos A y B, implementar:
+
+👉 A - B → elementos que están en A pero NO en B
+
+🔥 Claves
+Usar búsqueda (contiene)
+No modificar A
+Evitar duplicados
+🧩 Ejemplo
+A = [1, 2, 3, 4]
+B = [3, 4, 5]
+
+A - B = [1, 2]

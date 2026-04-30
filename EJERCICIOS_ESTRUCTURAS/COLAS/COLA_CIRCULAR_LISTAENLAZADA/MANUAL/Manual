@@ -1,0 +1,463 @@
+================================================================================
+              MANUAL COMPLETO — ColaCircularListaEnlazada<T>
+              Explicado desde cero, paso a paso (para principiantes)
+================================================================================
+
+
+0. ANTES DE TODO — ¿QUÉ ES UNA COLA CIRCULAR?
+================================================================================
+
+Una cola normal (FIFO: primero en entrar, primero en salir) se puede imaginar
+como una fila del banco. Pero una COLA CIRCULAR es especial: el último elemento
+apunta de vuelta al primero, formando un círculo.
+
+Ventaja: puedes dar vueltas infinitas sin necesidad de tener un "final" real.
+En programación, esto sirve para reutilizar espacios o para recorridos cíclicos.
+
+En esta implementación:
+
+  - Solo guardamos un puntero llamado "cola" que apunta al ÚLTIMO nodo.
+  - El frente (primero) es cola.getSiguiente().
+  - El último nodo apunta al primero (círculo cerrado).
+
+Visualmente (3 elementos: Ana, Luis, Sofia):
+
+         cola (apunta al último)
+              ↓
+   ┌─────────────────────────┐
+   │                         │
+   ▼                         │
+ [ Sofia ] → [ Ana ] → [ Luis ]
+   ↑                         │
+   └─────────────────────────┘
+ (Luis apunta a Sofia, círculo)
+
+El frente es el siguiente de cola → Sofia.
+El fondo es cola → Luis.
+
+Cuando la cola está vacía: cola = null.
+
+Esta clase extiende ListaEnlazada<T>, pero tiene su propia lógica circular
+y un contador "tamano" para saber cuántos elementos hay sin recorrer.
+
+
+1. CREAR LA COLA CIRCULAR
+================================================================================
+
+Código:
+    ColaCircularListaEnlazada<String> colaCircular = new ColaCircularListaEnlazada<>();
+
+Paso a paso:
+  1. Llama al constructor de ListaEnlazada (que pone cabeza = null).
+  2. Inicializa el campo "cola" a null (no hay ningún nodo).
+  3. Inicializa "tamano" a 0.
+
+Devuelve: nada (es un constructor).
+
+
+2. MÉTODOS PRINCIPALES (LOS QUE USARÁS SIEMPRE)
+================================================================================
+
+--------------------------------------------------------------
+2a. poneEnCola(T dato) — agrega un elemento al FONDO (al final del círculo)
+--------------------------------------------------------------
+
+¿Qué hace?
+  Inserta un nuevo elemento al final de la cola. El nuevo elemento pasa a ser
+  el último (fondo), y su siguiente apunta al frente (el primero).
+
+¿Cómo se invoca?
+  boolean ok = nombreCola.poneEnCola(algo);
+
+Parámetros:
+  dato : el elemento que quieres guardar (puede ser cualquier tipo, pero no null)
+
+Devuelve:
+  true si se agregó correctamente.
+  false si el dato es null (no se permiten nulos).
+
+Ejemplo:
+  ColaCircularListaEnlazada<Integer> turnos = new ColaCircularListaEnlazada<>();
+  turnos.poneEnCola(101);   // cola: [101] (frente=101, fondo=101)
+  turnos.poneEnCola(102);   // cola: [101, 102] (frente=101, fondo=102)
+  turnos.poneEnCola(103);   // cola: [101, 102, 103]
+
+Explicación técnica:
+  - Si la cola está vacía, el nuevo nodo apunta a sí mismo (círculo de 1 nodo)
+    y cola apunta a ese nodo.
+  - Si no está vacía:
+      * nuevo.setSiguiente(cola.getSiguiente()) → el nuevo apunta al frente.
+      * cola.setSiguiente(nuevo) → el viejo fondo apunta al nuevo.
+      * cola = nuevo → el nuevo pasa a ser el fondo.
+  - tamano++.
+
+--------------------------------------------------------------
+2b. quitaDeCola() — saca y devuelve el elemento del FRENTE
+--------------------------------------------------------------
+
+¿Qué hace?
+  Elimina el primer elemento (el que está en el frente) y lo devuelve.
+  El siguiente elemento pasa a ser el nuevo frente.
+
+¿Cómo se invoca?
+  T elemento = nombreCola.quitaDeCola();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  El elemento que estaba en el frente (el más antiguo).
+
+LANZA:
+  NoSuchElementException si la cola está vacía.
+  ¡Importante! A diferencia de una pila que devuelve null, aquí el programa
+  se rompe si llamas a quitaDeCola() estando vacía. Siempre revisa con vacia() antes.
+
+Ejemplo:
+  ColaCircularListaEnlazada<String> nombres = new ColaCircularListaEnlazada<>();
+  nombres.poneEnCola("Ana");
+  nombres.poneEnCola("Luis");
+  nombres.poneEnCola("Sofia");
+
+  String primero = nombres.quitaDeCola();  // primero = "Ana"
+  // Ahora la cola tiene ["Luis", "Sofia"]
+
+Explicación técnica:
+  - Guarda el nodo frente = cola.getSiguiente().
+  - Si frente == cola (solo un nodo), entonces cola = null (cola vacía).
+  - Si hay más, cola.setSiguiente(frente.getSiguiente()) → se salta el frente.
+  - frente se desconecta (ayuda al garbage collector).
+  - tamano--.
+  - Devuelve el dato del frente.
+
+--------------------------------------------------------------
+2c. frente() — mira el primer elemento SIN SACARLO
+--------------------------------------------------------------
+
+¿Qué hace?
+  Te dice cuál es el elemento que está en el frente, pero no lo quita de la cola.
+
+¿Cómo se invoca?
+  T elemento = nombreCola.frente();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  El elemento del frente (sin eliminarlo).
+
+LANZA:
+  NoSuchElementException si la cola está vacía.
+
+Ejemplo:
+  ColaCircularListaEnlazada<Double> precios = new ColaCircularListaEnlazada<>();
+  precios.poneEnCola(99.9);
+  precios.poneEnCola(49.5);
+
+  Double primero = precios.frente();   // primero = 99.9
+  // La cola sigue igual: [99.9, 49.5]
+
+Uso típico:
+  if (!cola.vacia()) {
+      System.out.println("El siguiente es: " + cola.frente());
+  }
+
+--------------------------------------------------------------
+2d. vacia() — ¿la cola no tiene elementos?
+--------------------------------------------------------------
+
+¿Qué hace?
+  Pregunta si la cola está vacía (sin ningún elemento).
+
+¿Cómo se invoca?
+  boolean vacio = nombreCola.vacia();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  true si no hay ningún elemento.
+  false si tiene al menos un elemento.
+
+Ejemplo:
+  ColaCircularListaEnlazada<Integer> cola = new ColaCircularListaEnlazada<>();
+  System.out.println(cola.vacia());   // true
+  cola.poneEnCola(42);
+  System.out.println(cola.vacia());   // false
+
+Nota:
+  Este método revisa si "cola == null". No recorre la lista.
+
+--------------------------------------------------------------
+2e. tamano() — cuántos elementos tiene la cola
+--------------------------------------------------------------
+
+¿Qué hace?
+  Devuelve la cantidad de elementos guardados en la cola.
+
+¿Cómo se invoca?
+  int cuantos = nombreCola.tamano();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  Un entero con el número de elementos (puede ser 0).
+
+Ejemplo:
+  ColaCircularListaEnlazada<String> tareas = new ColaCircularListaEnlazada<>();
+  tareas.poneEnCola("Estudiar");
+  tareas.poneEnCola("Comer");
+  System.out.println(tareas.tamano());   // 2
+  tareas.quitaDeCola();
+  System.out.println(tareas.tamano());   // 1
+
+Importante:
+  El tamaño se actualiza automáticamente en poneEnCola() y quitaDeCola().
+  No es necesario recorrer la lista. Es O(1) (muy rápido).
+
+--------------------------------------------------------------
+2f. anula() — borra toda la cola (la deja vacía)
+--------------------------------------------------------------
+
+¿Qué hace?
+  Elimina todos los elementos de la cola. Después de llamarlo, la cola queda
+  vacía (tamano = 0, cola = null).
+
+¿Cómo se invoca?
+  nombreCola.anula();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  Nada (void).
+
+Ejemplo:
+  ColaCircularListaEnlazada<Character> letras = new ColaCircularListaEnlazada<>();
+  letras.poneEnCola('A');
+  letras.poneEnCola('B');
+  letras.anula();
+  System.out.println(letras.vacia());   // true
+  System.out.println(letras.tamano());  // 0
+
+Nota:
+  Internamente pone cola = null y tamano = 0.
+  También llama a super.vaciar()? En este código concreto, anula() no llama a
+  super.vaciar(), pero igual funciona porque cola = null ya rompe el círculo.
+
+--------------------------------------------------------------
+2g. contieneCircular(T dato) — busca un elemento en la cola circular
+--------------------------------------------------------------
+
+¿Qué hace?
+  Recorre la cola circular (dando una vuelta completa) y comprueba si existe
+  un elemento igual al que se pasa como parámetro.
+
+¿Cómo se invoca?
+  boolean existe = nombreCola.contieneCircular(busqueda);
+
+Parámetros:
+  dato : el elemento que quieres buscar (puede ser cualquier tipo)
+
+Devuelve:
+  true si el elemento está en la cola.
+  false si no está o la cola está vacía.
+
+Ejemplo:
+  ColaCircularListaEnlazada<Integer> numeros = new ColaCircularListaEnlazada<>();
+  numeros.poneEnCola(10);
+  numeros.poneEnCola(20);
+  numeros.poneEnCola(30);
+
+  System.out.println(numeros.contieneCircular(20));  // true
+  System.out.println(numeros.contieneCircular(99));  // false
+
+Explicación técnica:
+  - Si la cola está vacía, devuelve false.
+  - Empieza desde el frente (cola.getSiguiente()).
+  - Recorre en un bucle do-while hasta que vuelve al frente.
+  - Compara cada dato con equals().
+  - Si encuentra coincidencia, devuelve true.
+  - Si termina la vuelta sin éxito, devuelve false.
+
+Precaución:
+  Este método NO modifica la cola. Solo la recorre.
+
+
+3. MÉTODOS HEREDADOS DE ListaEnlazada (ÚSALOS CON CUIDADO)
+================================================================================
+
+Como ColaCircularListaEnlazada extiende ListaEnlazada, también tiene todos los
+métodos de una lista normal, como agregar(), obtener(), eliminar(), etc.
+Pero si los usas, PUEDES ROMPER LA ESTRUCTURA CIRCULAR.
+
+Por ejemplo:
+  - agregar(int indice, T dato) inserta en cualquier posición.
+  - quitar(int indice) elimina por índice.
+Esos métodos ignoran la lógica circular (frente/fondo) y pueden dejar la cola
+en un estado inconsistente.
+
+Regla de oro:
+  Para trabajar como COLA, usa SÓLO los métodos de la interfaz TDACola:
+    poneEnCola(), quitaDeCola(), frente(), vacia(), tamano(), anula().
+  Si usas métodos de lista, la circularidad se pierde.
+
+Excepción:
+  El método agregar(T dato) (sin índice) está permitido porque internamente
+  redirige a poneEnCola()? En esta implementación NO lo sobrescribe, así que
+  agregar(T) funciona como en ListaEnlazada (agrega al final, pero sin
+  actualizar el puntero "cola"). Eso rompe la circularidad. Por tanto,
+  NO USES agregar(T). Siempre usa poneEnCola().
+
+Resumen de métodos heredados que DEBES EVITAR:
+  - agregar(T)        (prefiere poneEnCola)
+  - agregar(int, T)   (inserción arbitraria)
+  - quitar(int)       (eliminación por índice)
+  - eliminar(int)     (eliminación por índice)
+  - quitar(T)         (eliminación por valor)
+  - eliminar(T)       (eliminación por valor)
+  - invertir()        (rompe el orden FIFO)
+  - concatenar()      (puede romper circularidad)
+  - intercalar()      (lo mismo)
+  - ordenarTotal()    (el orden FIFO es sagrado)
+  - ordenarParcial()  (no tiene sentido en una cola)
+
+Si los usas, la cola dejará de comportarse como cola circular.
+
+
+4. EJEMPLOS PRÁCTICOS (CASOS DE USO REAL)
+================================================================================
+
+--------------------------------------------------------------
+4a. Simular turnos en un mostrador con prioridad circular
+--------------------------------------------------------------
+
+Problema: tienes 3 ventanillas y los clientes pasan en orden circular.
+
+  ColaCircularListaEnlazada<String> clientes = new ColaCircularListaEnlazada<>();
+  clientes.poneEnCola("Cliente1");
+  clientes.poneEnCola("Cliente2");
+  clientes.poneEnCola("Cliente3");
+  clientes.poneEnCola("Cliente4");
+
+  while (!clientes.vacia()) {
+      String atendido = clientes.quitaDeCola();
+      System.out.println("Atendiendo a " + atendido);
+      // Nota: en una cola circular normal, después de atender,
+      // el cliente no vuelve. Pero si quieres ronda infinita,
+      // podrías volver a ponerlo al fondo (simulando turnos rotativos).
+  }
+
+--------------------------------------------------------------
+4b. Buscar un elemento sin destruir la cola
+--------------------------------------------------------------
+
+Problema: quiero saber si un alumno ya está en la cola de espera.
+
+  ColaCircularListaEnlazada<Alumno> espera = new ColaCircularListaEnlazada<>();
+  espera.poneEnCola(new Alumno("Ana"));
+  espera.poneEnCola(new Alumno("Luis"));
+
+  if (espera.contieneCircular(new Alumno("Luis"))) {
+      System.out.println("Luis ya está en la cola");
+  }
+
+Nota: Para que funcione, la clase Alumno debe tener equals() bien implementado.
+
+--------------------------------------------------------------
+4c. Vaciar la cola y procesar cada elemento
+--------------------------------------------------------------
+
+Problema: quiero atender a todos los clientes y registrar su tiempo de espera.
+
+  ColaCircularListaEnlazada<Cliente> cola = new ColaCircularListaEnlazada<>();
+  // ... cargar clientes ...
+
+  int tiempoTotal = 0;
+  while (!cola.vacia()) {
+      Cliente c = cola.quitaDeCola();
+      tiempoTotal += c.getTiempoAtencion();
+      System.out.println("Atendido: " + c.getNombre());
+  }
+  System.out.println("Tiempo total: " + tiempoTotal);
+
+--------------------------------------------------------------
+4d. Copiar una cola circular sin modificarla
+--------------------------------------------------------------
+
+Problema: necesito una copia exacta de la cola para procesar en paralelo.
+
+  ColaCircularListaEnlazada<Integer> original = new ColaCircularListaEnlazada<>();
+  original.poneEnCola(1);
+  original.poneEnCola(2);
+  original.poneEnCola(3);
+
+  ColaCircularListaEnlazada<Integer> copia = new ColaCircularListaEnlazada<>();
+  ColaCircularListaEnlazada<Integer> aux = new ColaCircularListaEnlazada<>();
+
+  // Vaciamos original en aux mientras copiamos
+  while (!original.vacia()) {
+      int valor = original.quitaDeCola();
+      aux.poneEnCola(valor);
+      copia.poneEnCola(valor);
+  }
+  // Restauramos original desde aux
+  while (!aux.vacia()) {
+      original.poneEnCola(aux.quitaDeCola());
+  }
+  // Ahora original y copia son iguales e independientes.
+
+--------------------------------------------------------------
+4e. Juego de la papa caliente (hot potato)
+--------------------------------------------------------------
+
+Problema: simular el juego donde los niños pasan una papa en círculo.
+
+  ColaCircularListaEnlazada<String> circulo = new ColaCircularListaEnlazada<>();
+  circulo.poneEnCola("Ana");
+  circulo.poneEnCola("Luis");
+  circulo.poneEnCola("Sofia");
+  circulo.poneEnCola("Pedro");
+
+  int rondas = 5;  // la música para después de 5 pases
+  for (int i = 0; i < rondas; i++) {
+      String quien = circulo.quitaDeCola();    // saca el frente
+      circulo.poneEnCola(quien);              // lo pone al fondo
+      System.out.println("La papa está con: " + quien);
+  }
+  // El que queda al frente después de las rondas es el eliminado
+  String eliminado = circulo.quitaDeCola();
+  System.out.println("Eliminado: " + eliminado);
+
+
+5. DIFERENCIAS CLAVE CON UNA COLA NORMAL (NO CIRCULAR)
+================================================================================
+
+  Cola normal (ListaEnlazada con frente y fondo)   Cola circular (esta clase)
+  ────────────────────────────────────────────────────────────────────────────
+  El último nodo apunta a null                     El último nodo apunta al frente
+  No es circular                                   Es circular
+  Se necesita un puntero cabeza y cola separados   Solo necesita puntero "cola"
+  El recorrido termina en null                     El recorrido termina cuando vuelve al frente
+  contiene() recorre hasta null                    contieneCircular() recorre hasta cerrar el círculo
+
+  En la práctica, para la mayoría de usos FIFO simples, ambas funcionan igual.
+  La diferencia está en cómo recorres los elementos y cómo se comporta la memoria.
+
+
+6. REGLAS DE ORO PARA NO ROMPER NADA (RESUMEN)
+================================================================================
+
+  1. Siempre usa poneEnCola() para agregar, NO uses agregar().
+  2. Para sacar, solo quitaDeCola(). Evita quitar() o eliminar().
+  3. Para mirar el frente sin sacar: frente().
+  4. Siempre revisa vacia() antes de quitaDeCola() o frente() para evitar excepciones.
+  5. No modifiques la cola con métodos de lista (invertir, concatenar, ordenar, etc.).
+  6. Si necesitas recorrer la cola sin modificarla, usa contieneCircular() o haz una copia.
+  7. El tamaño (tamano()) es muy rápido, úsalo sin miedo.
+  8. Para vaciar completamente, usa anula().
+
+================================================================================
+  FIN DEL MANUAL
+================================================================================

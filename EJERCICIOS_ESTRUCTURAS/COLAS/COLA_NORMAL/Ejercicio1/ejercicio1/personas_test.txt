@@ -1,0 +1,6 @@
+Ana,17
+Luis,25
+Maria,30
+Pedro,15
+Sofia,40
+Juan,18

@@ -1,0 +1,15 @@
+EJERCICIO 4 — Ordenar una pila
+
+Implementar:
+
+Ordenar una pila de enteros de forma ascendente:
+
+entrada: [3, 1, 4, 2]
+salida:  [1, 2, 3, 4] (tope = 4)
+✔ Restricciones:
+solo usar otra pila auxiliar
+no usar listas ni arrays
+
+Claves:
+insertar ordenadamente en pila auxiliar
+volver a la original

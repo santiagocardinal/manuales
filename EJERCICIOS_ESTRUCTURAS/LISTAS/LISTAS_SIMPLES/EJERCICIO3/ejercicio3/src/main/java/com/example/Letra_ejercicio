@@ -1,0 +1,16 @@
+Ejercicio 4 – Invertir la lista
+
+Implementar un método que:
+
+Invierta completamente la lista enlazada.
+
+Ejemplo:
+
+1 → 2 → 3 → 4
+↓
+4 → 3 → 2 → 1
+
+ Claves:
+
+Manipulación de punteros (next)
+Tres referencias: anterior, actual, siguiente

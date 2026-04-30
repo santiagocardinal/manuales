@@ -1,0 +1,12 @@
+Ana, 20, 8.5
+Luis, 22, 5.9
+Sofia, 19, 6.2
+Pedro, 21, 4.8
+Maria, 23, 7.0
+Juan, 20, 3.5
+Lucia, 22, 9.1
+Diego, 24, 5.0
+Valentina, 19, 6.8
+Tomas, 21, 2.9
+Camila, 20, 7.5
+Mateo, 23, 5.7

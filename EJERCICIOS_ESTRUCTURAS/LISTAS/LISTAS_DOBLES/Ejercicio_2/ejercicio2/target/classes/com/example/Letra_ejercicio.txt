@@ -1,0 +1,10 @@
+Ejercicio 7 – Recorrido inverso
+
+Implementar un método que:
+
+Imprima la lista desde el final hacia el inicio.
+
+👉 Restricción:
+
+No recorrer desde el inicio cada vez
+Usar puntero tail

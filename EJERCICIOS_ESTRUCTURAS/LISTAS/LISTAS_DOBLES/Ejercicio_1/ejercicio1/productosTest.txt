@@ -1,0 +1,4 @@
+Pan,50
+Leche,80
+Carne,200
+Pan,50

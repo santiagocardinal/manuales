@@ -1,0 +1,18 @@
+jercicio 1 – Eliminación condicional con estructura interna
+
+Dada una lista simplemente enlazada de objetos Alumno:
+
+Alumno:
+- nombre
+- edad
+- promedio
+
+Implementar un método que:
+
+Elimine todos los alumnos cuyo promedio sea menor a 6.
+Retorne la cantidad de eliminados.
+
+ Claves:
+
+Manejo de eliminación en cabeza
+Uso de puntero anterior

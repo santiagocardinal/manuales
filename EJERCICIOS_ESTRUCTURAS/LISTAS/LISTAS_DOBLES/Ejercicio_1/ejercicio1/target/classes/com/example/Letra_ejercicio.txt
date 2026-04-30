@@ -1,0 +1,17 @@
+Ejercicio 6 – Eliminación bidireccional
+
+Dada una lista doblemente enlazada de objetos Producto:
+
+Producto:
+- nombre
+- precio
+
+Implementar un método que:
+
+Elimine todos los productos con precio mayor a un valor dado.
+Mantener consistencia de prev y next.
+
+Claves:
+
+Ajustar ambos punteros correctamente
+Casos extremos (cabeza y cola)

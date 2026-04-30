@@ -1,0 +1,11 @@
+🔹 EJERCICIO 1 — Recorrido seguro de cola circular
+
+📌 Implementar un método que:
+
+Muestre todos los elementos una sola vez
+Sin caer en loop infinito
+🔥 Claves:
+usar nodo inicial como referencia
+do-while ideal
+✔ Lo que te pueden pedir:
+mostrar()

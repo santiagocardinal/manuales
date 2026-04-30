@@ -1,0 +1,235 @@
+================================================================================
+                   MANUAL DE LA CLASE PilaListaEnlazada
+================================================================================
+
+Esta clase es una PILA (como una pila de platos). Solo puedes:
+- Meter un dato arriba (apilar)
+- Sacar el dato de arriba (desapilar)
+- Ver el dato de arriba sin sacarlo
+
+Está hecha con una lista enlazada internamente.
+
+================================================================================
+MÉTODO: mete(T dato)
+================================================================================
+¿Qué hace?
+  Agrega un elemento en la cima de la pila (el primero que se sacará después).
+
+¿Cómo se invoca?
+  nombreDeTuPila.mete( algo );
+
+Parámetros:
+  dato : el elemento que quieres guardar (puede ser número, texto, objeto, etc.)
+
+Devuelve:
+  Nada (void)
+
+Ejemplo:
+  PilaListaEnlazada<Integer> pila = new PilaListaEnlazada<>();
+  pila.mete(10);   // pila: [10]
+  pila.mete(20);   // pila: [20, 10]  (20 arriba)
+  pila.mete(5);    // pila: [5, 20, 10]
+
+================================================================================
+MÉTODO: saca()
+================================================================================
+¿Qué hace?
+  Quita y devuelve el elemento que está en la cima de la pila.
+
+¿Cómo se invoca?
+  T elemento = nombreDeTuPila.saca();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  El elemento que estaba arriba (el último en entrar). Si la pila está vacía, lanza error.
+
+Ejemplo:
+  PilaListaEnlazada<String> pila = new PilaListaEnlazada<>();
+  pila.mete("A");
+  pila.mete("B");
+  String sacado = pila.saca();   // sacado = "B", ahora la pila solo tiene "A"
+
+================================================================================
+MÉTODO: tope()
+================================================================================
+¿Qué hace?
+  Mira cuál es el elemento de arriba, pero NO lo quita.
+
+¿Cómo se invoca?
+  T elemento = nombreDeTuPila.tope();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  El elemento de arriba sin sacarlo. Si la pila está vacía, lanza error.
+
+Ejemplo:
+  PilaListaEnlazada<Double> pila = new PilaListaEnlazada<>();
+  pila.mete(3.14);
+  pila.mete(2.71);
+  Double arriba = pila.tope();   // arriba = 2.71, la pila sigue igual
+
+================================================================================
+MÉTODO: esVacia()
+================================================================================
+¿Qué hace?
+  Pregunta si la pila no tiene ningún elemento.
+
+¿Cómo se invoca?
+  boolean vacia = nombreDeTuPila.esVacia();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  true si la pila está vacía, false si tiene al menos un elemento.
+
+Ejemplo:
+  PilaListaEnlazada<Character> pila = new PilaListaEnlazada<>();
+  System.out.println(pila.esVacia());   // true
+  pila.mete('X');
+  System.out.println(pila.esVacia());   // false
+
+================================================================================
+MÉTODO: tamano()
+================================================================================
+¿Qué hace?
+  Dice cuántos elementos hay en la pila.
+
+¿Cómo se invoca?
+  int cuantos = nombreDeTuPila.tamano();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  El número de elementos (entero).
+
+Ejemplo:
+  PilaListaEnlazada<Integer> pila = new PilaListaEnlazada<>();
+  pila.mete(100);
+  pila.mete(200);
+  System.out.println(pila.tamano());   // 2
+  pila.saca();
+  System.out.println(pila.tamano());   // 1
+
+================================================================================
+MÉTODO: vaciar()
+================================================================================
+¿Qué hace?
+  Elimina todos los elementos de la pila, la deja vacía.
+
+¿Cómo se invoca?
+  nombreDeTuPila.vaciar();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  Nada (void)
+
+Ejemplo:
+  PilaListaEnlazada<String> pila = new PilaListaEnlazada<>();
+  pila.mete("Hola");
+  pila.mete("Mundo");
+  pila.vaciar();
+  System.out.println(pila.esVacia());   // true
+
+================================================================================
+MÉTODO: sacarPrimeroInsertado()
+================================================================================
+¿Qué hace?
+  Saca TODOS los elementos uno por uno y al final devuelve el PRIMERO que se metió.
+  (Es como vaciar la pila para saber cuál fue el primer elemento apilado).
+
+¿Cómo se invoca?
+  T primero = nombreDeTuPila.sacarPrimeroInsertado();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  El elemento que se metió primero (el que queda más abajo). Si la pila está vacía, devuelve null.
+
+Ejemplo:
+  PilaListaEnlazada<Integer> pila = new PilaListaEnlazada<>();
+  pila.mete(5);
+  pila.mete(10);
+  pila.mete(15);
+  Integer primero = pila.sacarPrimeroInsertado();  // primero = 5
+  // Ahora la pila queda vacía
+
+================================================================================
+MÉTODO: ordenarPila()
+================================================================================
+¿Qué hace?
+  Ordena los elementos de la pila de menor a mayor (usando el orden natural de Java).
+  IMPORTANTE: Los elementos deben ser comparables (implementar Comparable), como Integer, String, Date, etc.
+  Si metes objetos que no son comparables, el programa fallará.
+
+¿Cómo se invoca?
+  nombreDeTuPila.ordenarPila();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  Nada (void) – modifica la pila original dejándola ordenada.
+
+Ejemplo:
+  PilaListaEnlazada<Integer> pila = new PilaListaEnlazada<>();
+  pila.mete(30);
+  pila.mete(10);
+  pila.mete(20);
+  pila.ordenarPila();
+  // Ahora la pila tiene los números ordenados: arriba el menor (10) y abajo el mayor (30)
+  System.out.println(pila.saca()); // 10
+  System.out.println(pila.saca()); // 20
+  System.out.println(pila.saca()); // 30
+
+================================================================================
+MÉTODO: invertirPila()
+================================================================================
+¿Qué hace?
+  Da la vuelta a la pila: el elemento que estaba abajo pasa a arriba, y viceversa.
+
+¿Cómo se invoca?
+  nombreDeTuPila.invertirPila();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  Nada (void) – modifica la pila original.
+
+Ejemplo:
+  PilaListaEnlazada<String> pila = new PilaListaEnlazada<>();
+  pila.mete("A"); // fondo
+  pila.mete("B");
+  pila.mete("C"); // tope
+  pila.invertirPila();
+  // Ahora el tope es "A" y el fondo "C"
+  System.out.println(pila.saca()); // A
+  System.out.println(pila.saca()); // B
+  System.out.println(pila.saca()); // C
+
+================================================================================
+MÉTODO PRIVADO: insertarEnFondo(T dato)  (no se usa directamente)
+================================================================================
+¿Qué hace?
+  Es un ayudante para invertirPila. Inserta un elemento en el fondo (en la base) de la pila.
+  No se invoca desde fuera, solo dentro de la clase.
+
+¿Cómo se invoca?
+  No se puede llamar desde fuera. Solo internamente: this.insertarEnFondo(algo);
+
+================================================================================
+NOTAS IMPORTANTES:
+- La pila funciona con cualquier tipo de objeto: Integer, String, tus propias clases.
+- Para usar ordenarPila(), los elementos deben ser comparables. Si usas una clase propia, implementa Comparable.
+- Todos los métodos son públicos excepto insertarEnFondo (privado).
+- Si intentas saca() o tope() en una pila vacía, el programa se romperá (excepción).
+================================================================================

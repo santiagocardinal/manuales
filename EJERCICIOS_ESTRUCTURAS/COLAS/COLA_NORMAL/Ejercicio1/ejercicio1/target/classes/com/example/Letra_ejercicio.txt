@@ -1,0 +1,23 @@
+EJERCICIO 1 — Filtrado condicional (eliminar elementos)
+
+ Dada una cola de objetos Persona:
+
+Persona:
+- nombre
+- edad
+
+Implementar un método que:
+
+elimine todas las personas menores de 18
+mantenga el orden del resto
+retorne la cantidad de eliminados
+
+✔ Restricciones:
+
+solo podés usar una cola auxiliar
+
+Claves:
+
+recorrer con desencolar
+decidir si reinsertar o descartar
+reconstruir la cola

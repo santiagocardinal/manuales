@@ -1,0 +1,25 @@
+EJERCICIO 1 — Unión e intersección de conjuntos
+
+Consigna
+
+Dado dos conjuntos de enteros A y B:
+
+Implementar métodos que:
+
+Retornen la unión → elementos de A o B (sin duplicados)
+Retornen la intersección → elementos que están en ambos
+
+Claves
+No permitir duplicados
+No modificar los conjuntos originales
+Recorrer estructuras manualmente
+
+Ejemplo
+A = [1, 2, 3, 4]
+B = [3, 4, 5]
+
+Unión = [1, 2, 3, 4, 5]
+Intersección = [3, 4]
+🛠 Métodos esperados
+public Conjunto union(Conjunto otro);
+public Conjunto interseccion(Conjunto otro);

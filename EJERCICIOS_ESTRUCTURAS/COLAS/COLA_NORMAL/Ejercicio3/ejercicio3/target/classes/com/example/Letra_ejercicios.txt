@@ -1,0 +1,22 @@
+EJERCICIO 3 — Eliminar duplicados
+
+📌 Dada una cola de números:
+
+👉 Implementar un método que:
+
+elimine elementos repetidos
+deje solo la primera aparición
+
+Ejemplo:
+
+entrada: [1,2,3,2,4,3]
+salida:  [1,2,3,4]
+
+✔ Restricciones:
+
+usar solo una lista o cola auxiliar
+
+🔥 Claves:
+
+verificar existencia antes de encolar
+mantener orden original

@@ -1,0 +1,17 @@
+🧠 🔹 EJERCICIO 1 — Eliminar ocurrencias de un elemento
+
+Dada una pila de enteros:
+
+[5, 3, 7, 3, 9, 3]  (tope → 3)
+
+Implementar:
+
+Un método que elimine todas las ocurrencias de un valor dado.
+
+✔ Debe:
+mantener el orden relativo del resto
+retornar la cantidad de eliminados
+
+laves:
+uso de pila auxiliar
+reconstrucción

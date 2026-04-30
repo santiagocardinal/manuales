@@ -1,0 +1,13 @@
+Ejercicio 2 – Inserción ordenada
+
+Dada una lista simplemente enlazada de números enteros ordenada de menor a mayor:
+
+Implementar un método que:
+
+Inserte un nuevo valor manteniendo el orden.
+No se permite ordenar luego: debe insertarse correctamente desde el inicio.
+
+ Claves:
+
+Encontrar posición correcta
+Caso insertar al inicio, medio y final

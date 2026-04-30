@@ -1,0 +1,14 @@
+EJERCICIO 2 — Invertir una cola
+
+Dada una cola de enteros:
+
+Implementar un método que:
+
+invierta el orden de la cola
+
+✔ Restricciones:
+
+usar una pila como estructura auxiliar
+
+ Claves:
+ cola → pila → cola

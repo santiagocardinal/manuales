@@ -1,0 +1,449 @@
+==============================================================
+  MANUAL COMPLETO — Conjunto<T>
+  Explicado desde cero, paso a paso
+==============================================================
+
+
+==============================================================
+ 0. ANTES DE TODO — ¿QUÉ ES UN CONJUNTO?
+==============================================================
+
+Un conjunto (set) es una estructura que guarda elementos con
+DOS reglas fundamentales:
+
+  1. NO hay duplicados — no podés tener el mismo elemento dos veces.
+  2. El orden NO importa — {1, 2, 3} y {3, 1, 2} son el mismo conjunto.
+
+En matemáticas lo escribís así:
+  A = {Ana, Luis, Sofia}
+  B = {Luis, Pedro, Maria}
+
+Esta clase hereda TODA la estructura de ListaEnlazada<T> (nodos,
+punteros, recorridos) y sobreescribe únicamente agregar() para
+rechazar duplicados. Todo lo demás es la lista enlazada de siempre.
+
+Adicionalmente tiene cuatro operaciones matemáticas de conjuntos:
+  - union()         → lo que está en A O en B (o en ambos)
+  - interseccion()  → lo que está en A Y en B al mismo tiempo
+  - diferencia()    → lo que está en A pero NO en B
+  - esSubconjuntoDe() → ¿todos los de A están en B?
+
+
+==============================================================
+ 1. CREAR UN CONJUNTO
+==============================================================
+
+--------------------------------------------------------------
+1a. Conjunto vacío
+--------------------------------------------------------------
+
+Código:
+    Conjunto<Alumno> grupo = new Conjunto<>();
+
+Paso a paso:
+  1. Llama a super() → el constructor de ListaEnlazada pone cabeza = null.
+  2. El conjunto queda vacío, sin ningún elemento.
+
+Devuelve: nada — es un constructor.
+
+--------------------------------------------------------------
+1b. Conjunto desde un array
+--------------------------------------------------------------
+
+Código:
+    Alumno[] arr = {
+        new Alumno("Ana",  20, 8.5),
+        new Alumno("Luis", 22, 5.9),
+        new Alumno("Ana",  20, 8.5)  // duplicado — será ignorado
+    };
+    Conjunto<Alumno> grupo = new Conjunto<>(arr);
+
+Paso a paso:
+  1. Llama a super() → lista vacía.
+  2. Recorre el array con un for-each.
+  3. Por cada elemento llama a this.agregar(elemento).
+  4. agregar() del conjunto rechaza duplicados automáticamente.
+  5. El resultado es un conjunto con los elementos únicos del array.
+
+En el ejemplo, Ana aparece dos veces pero el conjunto solo la guarda una.
+
+Devuelve: nada — es un constructor.
+
+
+==============================================================
+ 2. AGREGAR ELEMENTOS
+==============================================================
+
+--------------------------------------------------------------
+agregar(elemento) — agrega SOLO si no existe ya
+--------------------------------------------------------------
+
+Código:
+    Conjunto<String> nums = new Conjunto<>();
+    nums.agregar("uno");   // agrega → true
+    nums.agregar("dos");   // agrega → true
+    nums.agregar("uno");   // RECHAZADO, ya existe → false
+    nums.agregar(null);    // RECHAZADO, null no permitido → false
+
+    // conjunto: {"uno", "dos"}
+
+Paso a paso:
+  1. Si el elemento es null → devuelve false directamente.
+  2. Llama a contiene(elemento) para verificar si ya está.
+     contiene() recorre toda la lista buscando con equals().
+  3. Si ya existe → devuelve false. No se agrega nada.
+  4. Si no existe → llama a super.agregar(elemento) que lo agrega
+     al final de la lista enlazada.
+  5. Devuelve true.
+
+DIFERENCIA CON ListaEnlazada:
+  En la lista, agregar("uno") dos veces da ["uno", "uno"].
+  En el conjunto, la segunda llamada devuelve false y no agrega nada.
+
+Devuelve: true si lo agregó, false si ya existía o era null.
+
+NOTA: la complejidad es O(n) porque contiene() tiene que recorrer
+toda la lista para verificar que no haya duplicados.
+
+
+==============================================================
+ 3. OPERACIONES DE CONJUNTO
+==============================================================
+
+--------------------------------------------------------------
+3a. union(otro) — A ∪ B
+--------------------------------------------------------------
+
+¿Qué significa?
+  Todos los elementos que están en A, o en B, o en ambos.
+  Ningún duplicado en el resultado.
+
+Código:
+    Conjunto<String> A = new Conjunto<>();
+    A.agregar("Ana");
+    A.agregar("Luis");
+    A.agregar("Sofia");
+
+    Conjunto<String> B = new Conjunto<>();
+    B.agregar("Luis");
+    B.agregar("Pedro");
+    B.agregar("Maria");
+
+    TDAConjunto<String> union = A.union(B);
+    // resultado: {Ana, Luis, Sofia, Pedro, Maria}
+    // "Luis" aparece en los dos pero en el resultado está UNA sola vez
+
+Paso a paso:
+  1. Crea un conjunto resultado vacío.
+  2. Agrega TODOS los elementos de A al resultado.
+     Como el resultado es un Conjunto, los duplicados ya no pueden entrar.
+  3. Agrega TODOS los elementos de B al resultado.
+     Los que ya estaban (como Luis) son rechazados automáticamente
+     por el agregar() del conjunto.
+  4. Devuelve el resultado.
+
+Las listas originales A y B no se modifican.
+
+Devuelve: un NUEVO TDAConjunto con todos los elementos únicos de A y B.
+
+--------------------------------------------------------------
+3b. interseccion(otro) — A ∩ B
+--------------------------------------------------------------
+
+¿Qué significa?
+  Solo los elementos que están en A Y también en B al mismo tiempo.
+
+Código:
+    // A = {Ana, Luis, Sofia}
+    // B = {Luis, Pedro, Maria}
+
+    TDAConjunto<String> inter = A.interseccion(B);
+    // resultado: {Luis}
+    // solo Luis está en los dos
+
+Paso a paso:
+  1. Crea un conjunto resultado vacío.
+  2. Recorre TODOS los elementos de A (con índices, del 0 al tamano-1).
+  3. Por cada elemento de A pregunta: ¿está en B? (otro.contiene(elemento))
+  4. Si SÍ está en B → lo agrega al resultado.
+  5. Si NO está en B → lo ignora.
+  6. Devuelve el resultado.
+
+Las listas originales A y B no se modifican.
+
+Devuelve: un NUEVO TDAConjunto con los elementos comunes a A y B.
+          Si no hay nada en común, devuelve un conjunto vacío.
+
+--------------------------------------------------------------
+3c. diferencia(otro) — A - B
+--------------------------------------------------------------
+
+¿Qué significa?
+  Los elementos que están en A pero NO están en B.
+  Es la "resta" de conjuntos: lo que tiene A que B no tiene.
+
+  ATENCIÓN: A - B y B - A son distintos. La diferencia NO es simétrica.
+
+Código:
+    // A = {Ana, Luis, Sofia}
+    // B = {Luis, Pedro, Maria}
+
+    TDAConjunto<String> difAB = A.diferencia(B);
+    // resultado: {Ana, Sofia}
+    // Luis está en B → no va al resultado
+    // Ana y Sofia NO están en B → sí van al resultado
+
+    TDAConjunto<String> difBA = B.diferencia(A);
+    // resultado: {Pedro, Maria}
+    // Luis está en A → no va al resultado
+    // Pedro y Maria NO están en A → sí van al resultado
+
+Paso a paso:
+  1. Crea un conjunto resultado vacío.
+  2. Recorre TODOS los elementos de A.
+  3. Por cada elemento de A pregunta: ¿está en B? (otro.contiene(elemento))
+  4. Si NO está en B → lo agrega al resultado.
+  5. Si SÍ está en B → lo ignora.
+  6. Devuelve el resultado.
+
+Las listas originales A y B no se modifican.
+
+Devuelve: un NUEVO TDAConjunto con lo que tiene A que no tiene B.
+          Si A está completamente contenido en B, devuelve vacío.
+
+--------------------------------------------------------------
+3d. esSubconjuntoDe(otro) — ¿A ⊆ B?
+--------------------------------------------------------------
+
+¿Qué significa?
+  Devuelve true si TODOS los elementos de A también están en B.
+  B puede tener más elementos que A — eso no importa.
+
+  Si A está vacío, siempre es subconjunto de cualquier cosa → true.
+
+Código:
+    Conjunto<String> A = new Conjunto<>();
+    A.agregar("Luis");
+    A.agregar("Ana");
+
+    Conjunto<String> B = new Conjunto<>();
+    B.agregar("Ana");
+    B.agregar("Luis");
+    B.agregar("Sofia");
+
+    boolean sub = A.esSubconjuntoDe(B); // true
+    // todos los de A (Luis, Ana) están en B
+
+    Conjunto<String> C = new Conjunto<>();
+    C.agregar("Luis");
+    C.agregar("Pedro"); // Pedro no está en B
+
+    boolean sub2 = C.esSubconjuntoDe(B); // false
+    // Pedro no está en B → C no es subconjunto de B
+
+Paso a paso:
+  1. Recorre TODOS los elementos de A.
+  2. Por cada elemento pregunta: ¿está en B? (otro.contiene(elemento))
+  3. Si encuentra UNO que NO está en B → devuelve false inmediatamente
+     (no necesita seguir revisando).
+  4. Si recorre todos sin encontrar ninguno ausente → devuelve true.
+
+Devuelve: true si todos los elementos de A están en B, false si falta alguno.
+
+--------------------------------------------------------------
+DIFERENCIA EN ListaEnlazada — diferencia(TDALista<T> otro)
+--------------------------------------------------------------
+
+NOTA: ListaEnlazada también tiene un método diferencia() pero
+trabaja con TDALista (no con TDAConjunto) y devuelve un Conjunto.
+
+Código:
+    ListaEnlazada<String> lista = new ListaEnlazada<>();
+    lista.agregar("Ana");
+    lista.agregar("Luis");
+    lista.agregar("Pedro");
+
+    ListaEnlazada<String> otra = new ListaEnlazada<>();
+    otra.agregar("Luis");
+
+    Conjunto<String> diff = lista.diferencia(otra);
+    // resultado: {Ana, Pedro}
+    // Luis está en otra → no va al resultado
+
+Paso a paso:
+  1. Crea un Conjunto resultado vacío.
+  2. Recorre los nodos de la lista actual (this) directamente.
+  3. Por cada dato pregunta: ¿está en otra? (otro.contiene(dato))
+  4. Si NO está → lo agrega al conjunto resultado.
+  5. Devuelve el conjunto resultado.
+
+Devuelve: un NUEVO Conjunto con los elementos de this que no están en otro.
+
+
+==============================================================
+ 4. toString() — ver el contenido del conjunto
+==============================================================
+
+Código:
+    Conjunto<String> A = new Conjunto<>();
+    A.agregar("Ana");
+    A.agregar("Luis");
+    System.out.println(A); // {Ana, Luis}
+
+    Conjunto<String> vacio = new Conjunto<>();
+    System.out.println(vacio); // CONJUNTO VACÍO {}
+
+Paso a paso:
+  1. Si el conjunto está vacío → devuelve "CONJUNTO VACÍO {}".
+  2. Si no, construye un String con formato {elem1, elem2, ...}.
+  3. Recorre con índices del 0 al tamano()-1.
+  4. Agrega cada elemento y una coma entre ellos (sin coma al final).
+
+Devuelve: String con el contenido del conjunto para imprimir/debug.
+
+
+==============================================================
+ 5. COMBINACIONES ÚTILES
+==============================================================
+
+--------------------------------------------------------------
+5a. Eliminar duplicados de una lista
+--------------------------------------------------------------
+
+Problema: tengo una lista con elementos repetidos y quiero
+          quedarme solo con los únicos.
+
+    ListaEnlazada<String> lista = new ListaEnlazada<>();
+    lista.agregar("Ana");
+    lista.agregar("Luis");
+    lista.agregar("Ana");   // duplicado
+    lista.agregar("Sofia");
+    lista.agregar("Luis");  // duplicado
+
+    Conjunto<String> sinDuplicados = new Conjunto<>();
+    for (int i = 0; i < lista.tamano(); i++) {
+        sinDuplicados.agregar(lista.obtener(i));
+    }
+    // sinDuplicados: {Ana, Luis, Sofia}
+
+--------------------------------------------------------------
+5b. Encontrar alumnos en común entre dos grupos
+--------------------------------------------------------------
+
+Problema: tengo dos grupos de alumnos y quiero saber
+          quiénes están en los dos.
+
+    Conjunto<String> grupoA = new Conjunto<>();
+    grupoA.agregar("Ana");
+    grupoA.agregar("Luis");
+    grupoA.agregar("Sofia");
+
+    Conjunto<String> grupoB = new Conjunto<>();
+    grupoB.agregar("Luis");
+    grupoB.agregar("Pedro");
+    grupoB.agregar("Sofia");
+
+    TDAConjunto<String> enAmbos = grupoA.interseccion(grupoB);
+    // enAmbos: {Luis, Sofia}
+
+--------------------------------------------------------------
+5c. Encontrar quién está en A pero no fue al examen B
+--------------------------------------------------------------
+
+Problema: A = alumnos inscriptos, B = alumnos que rindieron.
+          Quiero saber quién se ausentó.
+
+    Conjunto<String> inscriptos = new Conjunto<>();
+    // ... cargar inscriptos
+
+    Conjunto<String> rindieron = new Conjunto<>();
+    // ... cargar los que rindieron
+
+    TDAConjunto<String> ausentes = inscriptos.diferencia(rindieron);
+    // ausentes = los que se inscribieron pero no rindieron
+
+--------------------------------------------------------------
+5d. Verificar si un grupo es subconjunto de otro
+--------------------------------------------------------------
+
+Problema: ¿todos los alumnos del turno tarde también están
+          en la lista general?
+
+    boolean ok = turnoTarde.esSubconjuntoDe(listaGeneral);
+    if (!ok) {
+        System.out.println("Hay alumnos del turno tarde que no están en la lista general");
+    }
+
+--------------------------------------------------------------
+5e. Unir dos grupos sin repetir nadie
+--------------------------------------------------------------
+
+    TDAConjunto<String> todos = grupoA.union(grupoB);
+    // todos los alumnos de A y B, sin repetir a Luis ni a Sofia
+
+--------------------------------------------------------------
+5f. Construir un conjunto desde array y verificar membresía
+--------------------------------------------------------------
+
+    String[] nombres = {"Ana", "Luis", "Sofia", "Ana", "Luis"};
+    Conjunto<String> grupo = new Conjunto<>(nombres);
+    // grupo: {Ana, Luis, Sofia}  ← duplicados ignorados
+
+    boolean tieneAna = grupo.contiene("Ana"); // true
+    boolean tienePedro = grupo.contiene("Pedro"); // false
+
+
+==============================================================
+ 6. RESUMEN RÁPIDO — QUÉ DEVUELVE CADA MÉTODO
+==============================================================
+
+  agregar(T)                  → boolean      (true si agregó, false si duplicado o null)
+  union(TDAConjunto)          → TDAConjunto  (nuevo conjunto A ∪ B)
+  interseccion(TDAConjunto)   → TDAConjunto  (nuevo conjunto A ∩ B)
+  diferencia(TDAConjunto)     → TDAConjunto  (nuevo conjunto A - B)
+  esSubconjuntoDe(TDAConjunto)→ boolean      (true si A ⊆ B)
+  toString()                  → String       (representación visual del conjunto)
+
+  Heredados de ListaEnlazada (funcionan igual, pero agregar() controla duplicados):
+  contiene(T)    → boolean
+  indiceDe(T)    → int
+  buscar(Pred)   → T
+  obtener(int)   → T
+  tamano()       → int
+  esVacio()      → boolean
+  vaciar()       → void
+
+
+==============================================================
+ 7. REGLAS DE ORO PARA NO ROMPER NADA
+==============================================================
+
+  1. El conjunto rechaza duplicados en agregar(). No podés forzar
+     que entre dos veces el mismo elemento — simplemente devuelve false.
+
+  2. El conjunto rechaza null en agregar(). Si querés verificar
+     si algo está, usá contiene() — eso sí acepta cualquier valor.
+
+  3. union(), interseccion() y diferencia() siempre crean un NUEVO
+     conjunto. Los originales no se modifican jamás.
+
+  4. diferencia() NO es simétrica:
+       A.diferencia(B) ≠ B.diferencia(A)
+     Siempre pensá desde qué conjunto estás haciendo la resta.
+
+  5. esSubconjuntoDe() devuelve true si A está vacío. Un conjunto
+     vacío es subconjunto de cualquier conjunto (incluso de otro vacío).
+
+  6. contiene() y equals() deben estar bien implementados en el tipo T.
+     Si usás Alumno como tipo, asegurate de que Alumno tenga @Override
+     de equals(). Si no, dos objetos Alumno distintos con el mismo
+     nombre serán tratados como diferentes y el conjunto los dejará entrar
+     a los dos (porque compara referencias, no contenido).
+
+  7. Los métodos de lista (ordenarTotal, invertir, concatenar, etc.)
+     siguen funcionando en el conjunto porque los hereda. Pero invertir()
+     y ordenarTotal() modifican el orden interno, lo cual en un conjunto
+     matemático no debería importar (el orden no importa), pero en esta
+     implementación los nodos sí tienen un orden interno de la lista.
+
+==============================================================

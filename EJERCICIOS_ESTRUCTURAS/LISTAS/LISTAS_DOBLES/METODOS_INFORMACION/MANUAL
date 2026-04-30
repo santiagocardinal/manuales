@@ -1,0 +1,744 @@
+==============================================================
+  MANUAL COMPLETO — ListaEnlazadaDoble<Alumno>
+  Explicado desde cero, paso a paso
+==============================================================
+
+
+==============================================================
+ 0. ANTES DE TODO — ¿QUÉ ES UNA LISTA DOBLEMENTE ENLAZADA?
+==============================================================
+
+En una lista simple, cada nodo apunta al SIGUIENTE. Para ir al
+anterior, tenías que volver a recorrer desde la cabeza.
+
+En una lista DOBLEMENTE enlazada, cada nodo apunta en DOS direcciones:
+  - siguiente → apunta al nodo que viene después
+  - anterior  → apunta al nodo que estaba antes
+
+Ejemplo visual:
+  null ← [Ana] ↔ [Luis] ↔ [Sofia] → null
+
+Además, la clase tiene tres variables internas:
+  - cabeza  → apunta siempre al PRIMER nodo
+  - anterior → apunta siempre al ÚLTIMO nodo (no confundir con el
+               puntero anterior de cada nodo)
+  - tamano  → contador de cuántos elementos hay
+
+Esto permite agregar al final en O(1) (sin recorrer toda la lista)
+porque ya sabés directamente dónde está el último.
+
+
+==============================================================
+ 1. CREAR LA LISTA
+==============================================================
+
+Código:
+    ListaEnlazadaDoble<Alumno> alumnos = new ListaEnlazadaDoble<>();
+
+Paso a paso:
+  1. Se crea un objeto ListaEnlazadaDoble en memoria.
+  2. cabeza = null    → no hay ningún primer nodo.
+  3. anterior = null  → no hay ningún último nodo.
+  4. tamano = 0       → contador en cero.
+  5. El <Alumno> le dice que solo va a guardar objetos de tipo Alumno.
+
+Devuelve: nada — es un constructor, solo crea el objeto.
+
+NOTA: Esto es lo primero que tenés que hacer siempre.
+
+
+==============================================================
+ 2. AGREGAR ELEMENTOS
+==============================================================
+
+--------------------------------------------------------------
+2a. agregar(elemento) — agrega AL FINAL
+--------------------------------------------------------------
+
+Código:
+    Alumno a = new Alumno("Ana", 20, 8.5);
+    alumnos.agregar(a);
+
+Paso a paso:
+  1. Creás un objeto Alumno con nombre, edad y calificación.
+  2. Llamás a agregar(a).
+  3. Se crea un nuevo NodoDoble que envuelve ese Alumno.
+  4. Si la lista está vacía (cabeza == null):
+       - El nuevo nodo se convierte en cabeza.
+       - El nuevo nodo también se convierte en "anterior" (el último).
+       - tamano sube a 1.
+  5. Si ya hay elementos:
+       - El último nodo (anterior) apunta con su siguiente al nuevo.
+       - El nuevo nodo apunta con su anterior al que era el último.
+       - El puntero "anterior" de la clase pasa a apuntar al nuevo.
+       - tamano sube en 1 automáticamente... ESPERA.
+
+ATENCIÓN — BUG EN EL CÓDIGO ORIGINAL:
+  En el if (cabeza == null) se hace tamano++.
+  En el else (cuando ya hay elementos) NO se hace tamano++.
+  Esto significa que tamano() no usa esa variable — usa un while
+  que cuenta los nodos reales. Así que la variable "tamano" interna
+  no es del todo confiable, pero tamano() sí devuelve el valor correcto
+  porque recorre la lista contando nodos.
+
+Ejemplo visual:
+  Antes:   null ← [Ana] ↔ [Luis] → null
+  Después: null ← [Ana] ↔ [Luis] ↔ [Sofia] → null
+
+Devuelve: true (siempre).
+
+--------------------------------------------------------------
+2b. agregar(indice, elemento) — en posición específica
+--------------------------------------------------------------
+
+Código:
+    Alumno nuevo = new Alumno("Pedro", 21, 4.8);
+    alumnos.agregar(1, nuevo);  // inserta en posición 1
+
+Paso a paso:
+  1. Le pasás el número de posición y el Alumno.
+  2. Se crea un nuevo NodoDoble con el Alumno.
+  3. HAY TRES CASOS según el índice:
+
+  CASO A — índice == 0 (insertar al inicio):
+    - El nuevo nodo apunta hacia adelante a lo que era la cabeza.
+    - Si había cabeza, la cabeza vieja apunta hacia atrás al nuevo.
+    - El nuevo nodo pasa a ser la cabeza.
+    - Si la lista estaba vacía, "anterior" (el último) también es el nuevo.
+
+  CASO B — índice == tamano (insertar al final):
+    - El nuevo nodo apunta hacia atrás al que era el último.
+    - El que era el último apunta hacia adelante al nuevo.
+    - "anterior" (el último) pasa a ser el nuevo.
+
+  CASO C — cualquier otra posición (en el medio):
+    - Recorre la lista hasta llegar al nodo que está justo ANTES
+      del índice pedido (recorre índice - 1 pasos).
+    - Guarda el nodo siguiente de ese (que va a quedar después del nuevo).
+    - Conecta el nuevo entre los dos:
+        actual → nuevo → siguiente
+        actual ← nuevo ← siguiente
+    - Actualiza los cuatro punteros (dos del nuevo, dos de los vecinos).
+
+  4. tamano++ al final (siempre, en todos los casos).
+
+Ejemplo visual (CASO C, insertar en posición 1):
+  Antes:   null ← [Ana(0)] ↔ [Luis(1)] ↔ [Sofia(2)] → null
+  Después: null ← [Ana(0)] ↔ [Pedro(1)] ↔ [Luis(2)] ↔ [Sofia(3)] → null
+
+Devuelve: nada (void).
+Lanza:    IndexOutOfBoundsException si el índice es negativo.
+          IllegalArgumentException si el elemento es null.
+
+
+==============================================================
+ 3. OBTENER Y BUSCAR ELEMENTOS
+==============================================================
+
+--------------------------------------------------------------
+3a. obtener(indice) — trae el Alumno en esa posición
+--------------------------------------------------------------
+
+Código:
+    Alumno primero = alumnos.obtener(0);   // Ana
+    Alumno segundo = alumnos.obtener(1);   // Luis
+    Alumno nadie   = alumnos.obtener(99);  // null
+
+Paso a paso:
+  1. Le pasás un número de posición (base 0).
+  2. Si el índice es negativo, devuelve null directamente.
+  3. Empieza desde la cabeza con un contador en 0.
+  4. Avanza nodo a nodo (usando getSiguiente()) incrementando el contador.
+  5. Cuando el contador llega al índice pedido, devuelve el dato.
+  6. Si llega al final sin encontrar, devuelve null.
+
+NOTA sobre la doble: podría recorrer desde el final si el índice
+está más cerca de "anterior", pero esta implementación siempre
+recorre desde la cabeza hacia adelante.
+
+Devuelve: el Alumno en esa posición, o null si el índice no existe.
+
+--------------------------------------------------------------
+3b. buscar(Predicate) — busca por una condición
+--------------------------------------------------------------
+
+Código:
+    // buscar primer aprobado (nota >= 6)
+    Alumno aprobado = alumnos.buscar(a -> a.getCalificacion() >= 6.0);
+
+    // buscar por nombre exacto
+    Alumno lucia = alumnos.buscar(a -> a.getNombre().equals("Lucia"));
+
+    // buscar el primero mayor de 22 años
+    Alumno mayor = alumnos.buscar(a -> a.getEdad() > 22);
+
+Paso a paso:
+  1. Le pasás una condición en forma de lambda.
+  2. Si el Predicate es null, devuelve null directamente.
+  3. Recorre desde la cabeza hacia adelante.
+  4. En cada nodo pregunta: ¿este Alumno cumple la condición?
+  5. En cuanto encuentra el primero que cumple, lo devuelve y para.
+  6. Si ninguno cumple, devuelve null.
+
+IMPORTANTE: siempre chequeá el resultado antes de usarlo:
+    Alumno a = alumnos.buscar(...);
+    if (a != null) {
+        // usá a acá
+    }
+
+Devuelve: el primer Alumno que cumple la condición, o null.
+
+--------------------------------------------------------------
+3c. contiene(elemento) — ¿está en la lista?
+--------------------------------------------------------------
+
+Código:
+    Alumno ana = alumnos.obtener(0);
+    boolean existe = alumnos.contiene(ana); // true
+
+Paso a paso:
+  1. Le pasás un objeto Alumno.
+  2. Internamente llama a indiceDe(elemento).
+  3. Si indiceDe devuelve algo distinto de -1 → devuelve true.
+  4. Si indiceDe devuelve -1 → devuelve false.
+
+Devuelve: true si está en la lista, false si no.
+
+--------------------------------------------------------------
+3d. indiceDe(elemento) — ¿en qué posición está?
+--------------------------------------------------------------
+
+Código:
+    Alumno ana = alumnos.obtener(0);
+    int pos  = alumnos.indiceDe(ana);  // 0
+    int nada = alumnos.indiceDe(new Alumno("X", 0, 0)); // -1
+
+Paso a paso:
+  1. Si el dato es null, devuelve -1 directamente.
+  2. Recorre la lista desde la cabeza contando posiciones.
+  3. En cada nodo compara con equals().
+  4. Si hay coincidencia, devuelve el número de posición.
+  5. Si recorre toda la lista sin encontrar, devuelve -1.
+
+Devuelve: int con el índice (≥0), o -1 si no está.
+
+
+==============================================================
+ 4. QUITAR Y ELIMINAR ELEMENTOS
+==============================================================
+
+LA DIFERENCIA CLAVE (igual que en la lista simple):
+  - quitar()   → saca el elemento Y TE LO DEVUELVE
+  - eliminar() → saca el elemento pero solo te dice si lo encontró
+
+MÉTODO AUXILIAR INTERNO — desconectar(nodo):
+  La lista doble tiene un método privado llamado desconectar() que
+  hace el trabajo sucio de quitar un nodo. Lo usan quitar(T) y
+  quitar(int). Así no se repite código.
+
+  Lo que hace desconectar():
+    1. Toma el nodo anterior y el siguiente del nodo a sacar.
+    2. Si había anterior: lo conecta directamente al siguiente.
+    3. Si no había anterior (era la cabeza): la cabeza pasa a ser
+       el siguiente.
+    4. Si había siguiente: lo conecta directamente al anterior.
+    5. Si no había siguiente (era el último): "anterior" (el último
+       de la clase) pasa a ser el anterior del nodo sacado.
+    6. Pone siguiente y anterior del nodo sacado en null.
+    7. Devuelve el dato del nodo sacado.
+
+--------------------------------------------------------------
+4a. quitar(elemento) — saca y devuelve el objeto
+--------------------------------------------------------------
+
+Código:
+    Alumno ana = alumnos.obtener(0);
+    Alumno removido = alumnos.quitar(ana);
+    System.out.println(removido.getNombre()); // "Ana"
+
+Paso a paso:
+  1. Si la lista está vacía o el elemento es null, devuelve null.
+  2. Recorre desde la cabeza buscando con equals().
+  3. Cuando encuentra el nodo que contiene ese Alumno, llama a
+     desconectar(nodo) — ese método hace toda la desconexión.
+  4. Devuelve el Alumno que estaba en ese nodo.
+
+Devuelve: el Alumno removido, o null si no estaba en la lista.
+
+--------------------------------------------------------------
+4b. quitar(indice) — saca y devuelve por posición
+--------------------------------------------------------------
+
+Código:
+    Alumno segundo = alumnos.quitar(1);
+    System.out.println(segundo.getNombre()); // "Luis"
+
+Paso a paso:
+  1. Verifica que el índice exista con obtener(indice).
+     Si devuelve null, retorna null directamente.
+  2. Recorre desde la cabeza contando posiciones.
+  3. Cuando el contador llega al índice pedido, llama a
+     desconectar(nodo) con ese nodo.
+  4. Devuelve el Alumno de ese nodo.
+
+Devuelve: el Alumno removido, o null si el índice no existe.
+
+--------------------------------------------------------------
+4c. eliminar(elemento) — solo borra, no devuelve
+--------------------------------------------------------------
+
+Código:
+    Alumno luis = alumnos.obtener(0);
+    boolean ok = alumnos.eliminar(luis);
+    // ok = true → lo encontró y lo borró
+    // ok = false → no estaba
+
+Paso a paso:
+  1. Llama directamente a quitar(elemento).
+  2. Si quitar devuelve algo distinto de null → devuelve true.
+  3. Si quitar devuelve null (no lo encontró) → devuelve false.
+
+NOTA: esta es la versión simplificada. El código original comentado
+hacía todo el proceso manual, pero el autor lo simplificó usando
+quitar(). Ambas formas hacen lo mismo.
+
+Devuelve: true si lo eliminó, false si no estaba en la lista.
+
+--------------------------------------------------------------
+4d. eliminar(indice) — solo borra por posición, no devuelve
+--------------------------------------------------------------
+
+Código:
+    boolean ok = alumnos.eliminar(2);
+
+Paso a paso:
+  1. Llama directamente a quitar(indice).
+  2. Si quitar devuelve algo distinto de null → devuelve true.
+  3. Si quitar devuelve null → devuelve false.
+
+Devuelve: true si eliminó, false si el índice no existía.
+
+
+==============================================================
+ 5. ORDENAR
+==============================================================
+
+--------------------------------------------------------------
+5a. ordenarTotal(Comparator) — ordena Y MODIFICA la original
+--------------------------------------------------------------
+
+Código:
+    // por calificación ascendente (menor a mayor)
+    alumnos.ordenarTotal(
+        Comparator.comparingDouble(Alumno::getCalificacion)
+    );
+
+    // por nombre A → Z
+    alumnos.ordenarTotal(Comparator.comparing(Alumno::getNombre));
+
+    // por calificación descendente (mayor a menor)
+    alumnos.ordenarTotal(
+        Comparator.comparingDouble(Alumno::getCalificacion).reversed()
+    );
+
+    // por edad
+    alumnos.ordenarTotal(Comparator.comparingInt(Alumno::getEdad));
+
+Paso a paso:
+  1. Le pasás un Comparator que define el criterio de orden.
+  2. Si la lista está vacía, devuelve this y no hace nada.
+  3. Usa Selection Sort:
+       - El nodo actual es el "candidato a menor".
+       - Busca en todos los nodos siguientes si hay alguno más pequeño.
+       - Cuando termina esa búsqueda, intercambia los DATOS (los
+         objetos Alumno) entre el nodo actual y el menor encontrado.
+       - Los nodos físicos (con sus punteros) no se mueven — solo
+         se intercambian los datos adentro.
+       - Avanza al siguiente nodo y repite.
+  4. La lista original QUEDA MODIFICADA.
+  5. Devuelve la misma instancia (this).
+
+CUIDADO: después de llamar ordenarTotal, el orden original se pierde.
+Si necesitás conservar el orden original, usá ordenarParcial.
+
+Devuelve: la misma lista (modificada). No crea una nueva.
+
+--------------------------------------------------------------
+5b. ordenarParcial(Comparator) — crea UNA LISTA NUEVA ordenada
+--------------------------------------------------------------
+
+Código:
+    TDALista<Alumno> ordenada = alumnos.ordenarParcial(
+        Comparator.comparingDouble(Alumno::getCalificacion)
+    );
+    // ordenada: Tomas(2.9), Juan(3.5), Pedro(4.8)...
+    // alumnos: Ana, Luis, Sofia... (sin cambios)
+
+Paso a paso:
+  1. Si la lista está vacía, devuelve this.
+  2. Crea una ListaEnlazadaDoble nueva y vacía.
+  3. Copia todos los datos de la lista original en la nueva.
+  4. Aplica Selection Sort sobre la copia (mismo proceso que
+     ordenarTotal pero sobre la lista nueva).
+  5. La lista original NO SE TOCA.
+  6. Devuelve la lista nueva ya ordenada.
+
+Devuelve: una NUEVA TDALista ordenada. La original queda intacta.
+
+
+==============================================================
+ 6. OPERACIONES ESTRUCTURALES
+==============================================================
+
+--------------------------------------------------------------
+6a. invertir() — da vuelta toda la lista
+--------------------------------------------------------------
+
+Código:
+    alumnos.invertir();
+    // antes:   Ana, Luis, Sofia, Pedro...
+    // después: ...Pedro, Sofia, Luis, Ana
+
+Paso a paso:
+  1. No recibe parámetros.
+  2. Recorre la lista y en cada nodo invierte AMBOS punteros:
+       - setSiguiente(anterior) → el siguiente ahora apunta hacia atrás
+       - setAnterior(siguiente) → el anterior ahora apunta hacia adelante
+  3. Necesita tres variables auxiliares para no perder nodos:
+     anterior (empieza en null), nuevo (empieza en cabeza), siguiente.
+  4. Al terminar el recorrido, el que era el último nodo es la nueva
+     cabeza.
+  5. Intercambia los valores de cabeza y "anterior" (el último)
+     de la clase usando una variable temp.
+  6. Modifica la lista original.
+
+Devuelve: la misma lista invertida (modificada).
+
+--------------------------------------------------------------
+6b. concatenar(otra) — une dos listas en una nueva
+--------------------------------------------------------------
+
+Código:
+    ListaEnlazadaDoble<Alumno> grupo2 = new ListaEnlazadaDoble<>();
+    grupo2.agregar(new Alumno("Nico", 20, 6.0));
+    grupo2.agregar(new Alumno("Mia",  21, 7.2));
+
+    TDALista<Alumno> todos = alumnos.concatenar(grupo2);
+    // todos = [Ana, Luis, ..., Mateo, Nico, Mia]
+
+Paso a paso:
+  1. Le pasás otra TDALista<Alumno> (puede ser simple o doble).
+  2. Crea una ListaEnlazadaDoble nueva vacía.
+  3. Recorre la lista actual (this) con NodoDoble y copia cada dato.
+  4. Recorre la otra lista con índices (obtener(i)) y copia cada dato.
+  5. Las dos listas originales no se modifican.
+
+Devuelve: una NUEVA lista con todos los elementos. Las originales
+          no cambian.
+
+--------------------------------------------------------------
+6c. intercalar(otra) — alterna elementos de dos listas
+--------------------------------------------------------------
+
+Código:
+    // alumnos: Ana, Luis, Sofia
+    // grupo2:  Nico, Mia
+    TDALista<Alumno> mix = alumnos.intercalar(grupo2);
+    // mix: Ana, Nico, Luis, Mia, Sofia
+
+Paso a paso:
+  1. Le pasás otra TDALista<Alumno>.
+  2. Crea una ListaEnlazadaDoble nueva vacía.
+  3. Mientras ambas listas tengan elementos: agrega uno de esta
+     lista, luego uno de la otra, alternando.
+  4. Si esta lista tiene más elementos sobrantes, los agrega todos.
+  5. Si la otra tiene más elementos sobrantes, los agrega todos.
+  6. Las listas originales no se modifican.
+
+Devuelve: una NUEVA lista intercalada. Las originales no cambian.
+
+
+==============================================================
+ 7. UTILIDADES DE ESTADO
+==============================================================
+
+--------------------------------------------------------------
+7a. tamano() — cuántos elementos tiene la lista
+--------------------------------------------------------------
+
+Código:
+    int n = alumnos.tamano(); // 12 si están todos del archivo
+
+Paso a paso:
+  1. No recibe parámetros.
+  2. Empieza con un contador en 0.
+  3. Recorre la lista desde la cabeza hasta que no haya más nodos.
+  4. Por cada nodo, suma 1.
+  5. Devuelve el contador.
+
+NOTA: aunque la clase tiene una variable interna "tamano", este
+método la ignora y cuenta los nodos reales recorriéndolos. Esto
+es porque la variable interna no se actualiza correctamente en
+todos los casos (ver BUG en sección 2a).
+
+Devuelve: int con la cantidad de elementos. 0 si está vacía.
+
+--------------------------------------------------------------
+7b. esVacio() — ¿la lista está vacía?
+--------------------------------------------------------------
+
+Código:
+    if (alumnos.esVacio()) {
+        System.out.println("No hay alumnos cargados");
+    }
+
+Paso a paso:
+  1. No recibe parámetros.
+  2. Solo chequea si cabeza == null.
+  3. Si cabeza es null → devuelve true.
+  4. Si hay al menos un nodo → devuelve false.
+
+Devuelve: true si está vacía, false si tiene al menos un elemento.
+
+--------------------------------------------------------------
+7c. vaciar() — borra todo
+--------------------------------------------------------------
+
+Código:
+    alumnos.vaciar();
+    // alumnos.esVacio() == true
+    // alumnos.tamano()  == 0
+
+Paso a paso:
+  1. No recibe parámetros.
+  2. Pone cabeza = null.
+  3. Pone anterior = null (a diferencia de la lista simple que
+     solo ponía cabeza en null).
+  4. Al hacer eso, ningún nodo es alcanzable → Java los elimina.
+  5. La lista queda como recién creada.
+
+Devuelve: nada (void).
+
+
+==============================================================
+ 8. COMBINACIONES ÚTILES
+==============================================================
+
+--------------------------------------------------------------
+8a. Obtener el mejor alumno del aula
+--------------------------------------------------------------
+
+Problema: quiero saber quién tiene la nota más alta.
+Solución: ordenar una copia de mayor a menor y agarrar el primero.
+
+    TDALista<Alumno> ranking = alumnos.ordenarParcial(
+        Comparator.comparingDouble(Alumno::getCalificacion).reversed()
+    );
+    Alumno mejor = ranking.obtener(0);
+    System.out.println("Mejor alumno: " + mejor.getNombre());
+    System.out.println("Nota: " + mejor.getCalificacion());
+    // resultado: Lucia con 9.1
+
+NOTA: se usa ordenarParcial para que la lista original no cambie.
+
+--------------------------------------------------------------
+8b. Crear una lista solo con los aprobados
+--------------------------------------------------------------
+
+Problema: quiero una lista separada con los que tienen nota >= 6.
+Solución: recorrer con tamano + obtener y filtrar manualmente.
+
+    ListaEnlazadaDoble<Alumno> aprobados = new ListaEnlazadaDoble<>();
+    for (int i = 0; i < alumnos.tamano(); i++) {
+        Alumno a = alumnos.obtener(i);
+        if (a.getCalificacion() >= 6.0) {
+            aprobados.agregar(a);
+        }
+    }
+    System.out.println("Aprobados: " + aprobados.tamano());
+
+NOTA: aprobados es una lista nueva. alumnos no se modifica.
+
+--------------------------------------------------------------
+8c. Sacar a todos los aplazados de la lista
+--------------------------------------------------------------
+
+Problema: quiero eliminar de la lista a todos los que tienen nota < 6.
+Solución: buscar el primero que aplazó, eliminarlo, repetir hasta
+          que no quede ninguno.
+
+    Alumno aplazado;
+    while ((aplazado = alumnos.buscar(
+            a -> a.getCalificacion() < 6.0)) != null) {
+        alumnos.eliminar(aplazado);
+    }
+    // la lista ahora solo tiene aprobados
+
+NOTA: este SÍ modifica la lista original.
+
+--------------------------------------------------------------
+8d. Verificar si hay alguien con nota 10
+--------------------------------------------------------------
+
+    Alumno diez = alumnos.buscar(a -> a.getCalificacion() == 10.0);
+    if (diez != null) {
+        System.out.println(diez.getNombre() + " tiene 10!");
+    } else {
+        System.out.println("Nadie tiene 10");
+    }
+
+NOTA: siempre chequeá si el resultado de buscar es null antes de
+usarlo, si no tu programa tira NullPointerException.
+
+--------------------------------------------------------------
+8e. Obtener todos los alumnos de una edad específica
+--------------------------------------------------------------
+
+    ListaEnlazadaDoble<Alumno> de20 = new ListaEnlazadaDoble<>();
+    for (int i = 0; i < alumnos.tamano(); i++) {
+        Alumno a = alumnos.obtener(i);
+        if (a.getEdad() == 20) {
+            de20.agregar(a);
+        }
+    }
+    // de20: Ana(20), Juan(20), Camila(20)
+
+--------------------------------------------------------------
+8f. Actualizar la nota de un alumno
+--------------------------------------------------------------
+
+Problema: Juan rindió de nuevo y ahora tiene 7.0.
+
+    Alumno juan = alumnos.buscar(a -> a.getNombre().equals("Juan"));
+    if (juan != null) {
+        juan.setCalificacion(7.0);
+    }
+    // la nota en la lista quedó actualizada automáticamente
+
+NOTA IMPORTANTE: los objetos en la lista se guardan por REFERENCIA.
+Cuando buscar() o obtener() te devuelven un Alumno, ese objeto ES
+el mismo que está dentro del nodo. Si le cambiás la calificación,
+el cambio se refleja directamente en la lista. No necesitás sacar
+el objeto, modificarlo y volver a insertarlo.
+
+--------------------------------------------------------------
+8g. Mostrar toda la lista por consola
+--------------------------------------------------------------
+
+    for (int i = 0; i < alumnos.tamano(); i++) {
+        Alumno a = alumnos.obtener(i);
+        System.out.println(i + ". " + a.getNombre()
+            + " | edad: " + a.getEdad()
+            + " | nota: " + a.getCalificacion());
+    }
+
+--------------------------------------------------------------
+8h. Calcular el promedio del aula
+--------------------------------------------------------------
+
+    double suma = 0;
+    for (int i = 0; i < alumnos.tamano(); i++) {
+        suma += alumnos.obtener(i).getCalificacion();
+    }
+    double promedio = suma / alumnos.tamano();
+    System.out.println("Promedio: " + promedio);
+
+--------------------------------------------------------------
+8i. Recorrer la lista al revés sin modificarla
+--------------------------------------------------------------
+
+Problema: quiero ver los alumnos en orden inverso pero sin tocar
+          la lista original.
+
+    TDALista<Alumno> invertida = alumnos.concatenar(
+        new ListaEnlazadaDoble<>()
+    );
+    invertida.invertir();
+    for (int i = 0; i < invertida.tamano(); i++) {
+        System.out.println(invertida.obtener(i).getNombre());
+    }
+
+NOTA: concatenar con una lista vacía es la forma de hacer una copia.
+Luego invertís la copia sin tocar la original.
+
+
+==============================================================
+ 9. DIFERENCIAS CLAVE RESPECTO A LA LISTA SIMPLE
+==============================================================
+
+  LISTA SIMPLE                     LISTA DOBLE
+  ─────────────────────────────────────────────────────────
+  Nodo solo apunta al siguiente     Nodo apunta al siguiente
+                                    Y al anterior
+
+  Solo tiene "cabeza"               Tiene "cabeza" (primero)
+                                    Y "anterior" (último)
+
+  Para ir al final hay que          Va directo al final en
+  recorrer toda la lista            O(1) gracias al puntero
+                                    "anterior"
+
+  agregar(T) recorre toda la        agregar(T) va directo al
+  lista para llegar al final        último con "anterior"
+
+  quitar/eliminar usan              quitar/eliminar usan el
+  anterior manual                   método desconectar() que
+                                    aprovecha ambos punteros
+
+  vaciar() solo pone                vaciar() pone cabeza=null
+  cabeza=null                       Y anterior=null
+
+
+==============================================================
+ 10. RESUMEN RÁPIDO — QUÉ DEVUELVE CADA MÉTODO
+==============================================================
+
+  agregar(T)               → boolean  (siempre true)
+  agregar(int, T)          → void     (nada)
+  obtener(int)             → Alumno   (o null si índice inválido)
+  buscar(Predicate)        → Alumno   (o null si no cumple nadie)
+  contiene(T)              → boolean  (true/false)
+  indiceDe(T)              → int      (índice ≥0, o -1 si no está)
+  quitar(T)                → Alumno   (el removido, o null)
+  quitar(int)              → Alumno   (el removido, o null)
+  eliminar(T)              → boolean  (true si lo encontró)
+  eliminar(int)            → boolean  (true si el índice existía)
+  ordenarTotal(Comparator) → TDALista (la misma lista, modificada)
+  ordenarParcial(Comparator)→ TDALista (lista nueva, original intacta)
+  invertir()               → TDALista (la misma lista, modificada)
+  concatenar(TDALista)     → TDALista (lista nueva)
+  intercalar(TDALista)     → TDALista (lista nueva)
+  tamano()                 → int      (cantidad de elementos reales)
+  esVacio()                → boolean  (true si está vacía)
+  vaciar()                 → void     (nada, lista queda vacía)
+
+
+==============================================================
+ 11. REGLAS DE ORO PARA NO ROMPER NADA
+==============================================================
+
+  1. Los índices empiezan en 0. El primero es 0, no 1.
+
+  2. Siempre chequeá null después de buscar() u obtener():
+         Alumno a = alumnos.buscar(...);
+         if (a != null) { ... }
+
+  3. ordenarTotal() MODIFICA la lista original para siempre.
+     Si necesitás el orden original, usá ordenarParcial().
+
+  4. invertir(), ordenarTotal() → modifican la lista original.
+     concatenar(), intercalar(), ordenarParcial() → crean lista nueva.
+
+  5. quitar() vs eliminar():
+       - quitar()   → necesitás el objeto después de sacarlo.
+       - eliminar() → solo querés borrarlo, no te importa el objeto.
+
+  6. Si modificás un Alumno que obtuviste con obtener() o buscar(),
+     ese cambio se refleja en la lista automáticamente (son referencias).
+
+  7. La variable interna "tamano" de la clase tiene un bug menor
+     (no se incrementa en todos los casos de agregar(T)). Usá
+     siempre el método tamano() para saber cuántos hay — ese sí
+     cuenta correctamente recorriendo los nodos reales.
+
+==============================================================

@@ -1,0 +1,415 @@
+================================================================================
+              MANUAL COMPLETO — ColaCircularArray<T>
+       Cola circular implementada con un ARRAY (arreglo) de tamaño fijo
+              Explicado para quien no sabe nada de nada
+================================================================================
+
+
+0. ¿QUÉ ES ESTA COSA Y PARA QUÉ SIRVE?
+================================================================================
+
+Imagina una fila del banco, pero con una capacidad máxima de personas.
+Si la fila se llena, no puedes agregar a nadie más hasta que alguien se vaya.
+
+Esta cola es "circular" porque cuando llegas al final del arreglo, vuelves
+al principio (como un círculo), reutilizando los espacios vacíos que dejaron
+los que ya salieron.
+
+DIFERENCIA CLAVE con la cola circular con lista enlazada:
+  - Esta usa un ARRAY (tamaño fijo) por dentro, no nodos enlazados.
+  - Tiene una capacidad máxima que se define al crear la cola.
+  - Si la cola se llena, poneEnCola() devuelve false (no se puede agregar más).
+  - No crece automáticamente (aunque existe un método privado cambioTamano()
+    que duplicaría la capacidad, pero NO se usa en este código; está comentado).
+
+
+1. CREAR LA COLA CIRCULAR CON ARRAY
+================================================================================
+
+Código:
+    ColaCircularArray<String> cola = new ColaCircularArray<>(5);
+
+Paso a paso:
+  1. Se llama al constructor con un número entero (la capacidad máxima).
+  2. Si la capacidad es 0 o negativa, lanza IllegalArgumentException.
+  3. Se crea un arreglo interno de objetos del tamaño indicado (capacidad).
+  4. Se inicializa:
+       - frente = 0      (índice donde está el primer elemento)
+       - fin = -1        (no hay último elemento aún)
+       - tamano = 0      (vacía por ahora)
+  5. El <String> indica que solo guardará textos.
+
+Devuelve: nada (es un constructor).
+
+
+2. MÉTODOS QUE USARÁS SIEMPRE
+================================================================================
+
+--------------------------------------------------------------
+2a. poneEnCola(T dato) — agrega un elemento al FONDO de la cola
+--------------------------------------------------------------
+
+¿Qué hace?
+  Añade un elemento al final de la cola, si hay espacio disponible.
+  Si la cola está llena, no lo agrega y devuelve false.
+
+¿Cómo se invoca?
+  boolean ok = nombreCola.poneEnCola(algo);
+
+Parámetros:
+  dato : lo que quieres guardar (no puede ser null)
+
+Devuelve:
+  true si se agregó correctamente.
+  false si el dato es null o la cola está llena.
+
+Ejemplo:
+  ColaCircularArray<Integer> turnos = new ColaCircularArray<>(3);
+  turnos.poneEnCola(101);   // true, cola: [101]
+  turnos.poneEnCola(102);   // true, cola: [101, 102]
+  turnos.poneEnCola(103);   // true, cola: [101, 102, 103] (llena)
+  turnos.poneEnCola(104);   // false, cola llena, no agrega
+
+Explicación técnica:
+  - Si dato es null → false.
+  - Si estaLlena() → false.
+  - fin = (fin + 1) % capacidad   (avanza circularmente).
+  - Guarda dato en elementos[fin].
+  - tamano++.
+  - Devuelve true.
+
+--------------------------------------------------------------
+2b. quitaDeCola() — saca y devuelve el elemento del FRENTE
+--------------------------------------------------------------
+
+¿Qué hace?
+  Elimina el elemento que está al frente (el más antiguo) y lo devuelve.
+  El siguiente elemento pasa a ser el nuevo frente.
+
+¿Cómo se invoca?
+  T elemento = nombreCola.quitaDeCola();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  El elemento que estaba en el frente.
+
+LANZA:
+  NoSuchElementException si la cola está vacía.
+  ¡Siempre revisa vacia() antes!
+
+Ejemplo:
+  ColaCircularArray<String> nombres = new ColaCircularArray<>(3);
+  nombres.poneEnCola("Ana");
+  nombres.poneEnCola("Luis");
+  nombres.poneEnCola("Sofia");
+
+  String primero = nombres.quitaDeCola();   // "Ana"
+  // ahora la cola tiene ["Luis", "Sofia"]
+
+Explicación técnica:
+  - Si vacía → lanza excepción.
+  - Guarda dato = elementos[frente].
+  - frente = (frente + 1) % capacidad   (avanza circularmente).
+  - tamano--.
+  - Devuelve dato.
+
+Nota: El espacio que queda vacío (el antiguo frente) se reutilizará cuando
+      el "fin" dé la vuelta. Por eso es circular.
+
+--------------------------------------------------------------
+2c. frente() — mira el primer elemento SIN SACARLO
+--------------------------------------------------------------
+
+¿Qué hace?
+  Te dice cuál es el elemento que está al frente, pero no lo quita de la cola.
+
+¿Cómo se invoca?
+  T elemento = nombreCola.frente();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  El elemento del frente.
+
+LANZA:
+  NoSuchElementException si la cola está vacía.
+
+Ejemplo:
+  ColaCircularArray<Double> precios = new ColaCircularArray<>(5);
+  precios.poneEnCola(99.9);
+  precios.poneEnCola(49.5);
+
+  Double primero = precios.frente();   // 99.9
+  // La cola sigue igual: [99.9, 49.5]
+
+--------------------------------------------------------------
+2d. vacia() — ¿la cola no tiene elementos?
+--------------------------------------------------------------
+
+¿Qué hace?
+  Pregunta si la cola está vacía (sin ningún elemento).
+
+¿Cómo se invoca?
+  boolean vacio = nombreCola.vacia();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  true si tamano == 0, false si hay al menos un elemento.
+
+Ejemplo:
+  ColaCircularArray<Integer> cola = new ColaCircularArray<>(10);
+  System.out.println(cola.vacia());   // true
+  cola.poneEnCola(42);
+  System.out.println(cola.vacia());   // false
+
+--------------------------------------------------------------
+2e. tamano() — cuántos elementos tiene la cola
+--------------------------------------------------------------
+
+¿Qué hace?
+  Devuelve la cantidad de elementos guardados actualmente.
+
+¿Cómo se invoca?
+  int cuantos = nombreCola.tamano();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  Un entero con el número de elementos (nunca mayor que la capacidad).
+
+Ejemplo:
+  ColaCircularArray<String> tareas = new ColaCircularArray<>(5);
+  tareas.poneEnCola("Estudiar");
+  tareas.poneEnCola("Comer");
+  System.out.println(tareas.tamano());   // 2
+  tareas.quitaDeCola();
+  System.out.println(tareas.tamano());   // 1
+
+--------------------------------------------------------------
+2f. anula() — borra toda la cola (la deja vacía)
+--------------------------------------------------------------
+
+¿Qué hace?
+  Elimina todos los elementos y restablece la cola como recién creada.
+  (Pero la capacidad sigue siendo la misma).
+
+¿Cómo se invoca?
+  nombreCola.anula();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  Nada (void).
+
+Ejemplo:
+  ColaCircularArray<Character> letras = new ColaCircularArray<>(3);
+  letras.poneEnCola('A');
+  letras.poneEnCola('B');
+  letras.anula();
+  System.out.println(letras.vacia());   // true
+  System.out.println(letras.tamano());  // 0
+
+Explicación técnica:
+  - Recorre todo el arreglo y pone cada posición a null (para que el garbage collector pueda limpiar).
+  - frente = 0
+  - fin = -1
+  - tamano = 0
+
+--------------------------------------------------------------
+2g. estaLlena() — ¿la cola alcanzó su capacidad máxima?
+--------------------------------------------------------------
+
+¿Qué hace?
+  Te dice si la cola está llena (no puedes poner más elementos sin sacar).
+
+¿Cómo se invoca?
+  boolean llena = nombreCola.estaLlena();
+
+Parámetros:
+  Ninguno
+
+Devuelve:
+  true si tamano == capacidad, false si aún hay espacio.
+
+Ejemplo:
+  ColaCircularArray<Integer> cola = new ColaCircularArray<>(2);
+  cola.poneEnCola(1);
+  cola.poneEnCola(2);
+  System.out.println(cola.estaLlena());   // true
+  cola.quitaDeCola();
+  System.out.println(cola.estaLlena());   // false (ahora hay un espacio libre)
+
+Uso típico:
+  if (!cola.estaLlena()) {
+      cola.poneEnCola(nuevoDato);
+  } else {
+      System.out.println("Cola llena, no se puede agregar");
+  }
+
+
+3. MÉTODOS PRIVADOS (NO SE USAN DESDE FUERA)
+================================================================================
+
+--------------------------------------------------------------
+cambioTamano() — Método privado que NO se usa en este código
+--------------------------------------------------------------
+
+¿Qué hace?
+  Duplica la capacidad de la cola cuando se llena, copiando los elementos
+  en un nuevo arreglo más grande.
+
+¿Por qué no se usa?
+  El método está escrito pero nunca es llamado desde ninguna parte.
+  De hecho, poneEnCola() devuelve false si la cola está llena en vez de
+  llamar a cambioTamano(). Esto significa que la cola tiene tamaño fijo
+  y NO crece automáticamente.
+
+Si quisieras que crezca, tendrías que modificar poneEnCola() para que
+llame a cambioTamano() cuando esté llena. Pero tal como está, no crece.
+
+En resumen: ignora este método. No lo necesitas.
+
+
+4. ¡PRECAUCIÓN! HERENCIA DE ListaEnlazada
+================================================================================
+
+Esta clase extiende ListaEnlazada<T>, pero por dentro NO usa la lista enlazada.
+Usa su propio arreglo (elementos). El problema es que hereda todos los métodos
+de lista (agregar, quitar, eliminar, obtener, invertir, concatenar, etc.).
+
+Si llamas a esos métodos heredados, trabajarán sobre la lista enlazada (que está
+vacía porque nunca la usaste), NO sobre el arreglo circular. Esto podría causar
+comportamientos rarísimos o errores.
+
+REGLAS DE ORO:
+  - SOLO usa los métodos de la interfaz TDACola:
+        poneEnCola(), quitaDeCola(), frente(), vacia(), tamano(), anula().
+  - NUNCA uses agregar(), quitar(), eliminar(), obtener(), invertir(), etc.
+  - Tampoco uses estaLlena()? Ese es propio y sí se puede.
+  - Olvida que extiende ListaEnlazada; piensa que es una cola circular con array.
+
+Si accidentalmente usas un método de lista, puede que compile pero hará cosas
+inesperadas. Por ejemplo:
+    cola.agregar("Hola")   // agrega a la lista enlazada, no a la cola circular
+    cola.tamano()          // este sí es el de la cola (propio)
+    cola.quitar(0)         // rompe porque intenta usar la lista enlazada vacía
+
+
+5. EJEMPLOS PRÁCTICOS
+================================================================================
+
+--------------------------------------------------------------
+5a. Usar la cola con capacidad limitada
+--------------------------------------------------------------
+
+  ColaCircularArray<String> cola = new ColaCircularArray<>(3);
+  cola.poneEnCola("A");
+  cola.poneEnCola("B");
+  cola.poneEnCola("C");
+  System.out.println(cola.estaLlena()); // true
+
+  String sacado = cola.quitaDeCola();   // "A"
+  System.out.println(cola.tamano());    // 2
+  cola.poneEnCola("D");                 // true, ahora cola: ["B","C","D"]
+
+--------------------------------------------------------------
+5b. Atender clientes hasta que la cola quede vacía
+--------------------------------------------------------------
+
+  ColaCircularArray<Cliente> cola = new ColaCircularArray<>(10);
+  // ... cargar clientes ...
+
+  while (!cola.vacia()) {
+      Cliente c = cola.quitaDeCola();
+      System.out.println("Atendiendo a " + c.getNombre());
+  }
+
+--------------------------------------------------------------
+5c. Evitar agregar cuando la cola está llena
+--------------------------------------------------------------
+
+  ColaCircularArray<Integer> cola = new ColaCircularArray<>(5);
+  for (int i = 1; i <= 10; i++) {
+      if (!cola.estaLlena()) {
+          cola.poneEnCola(i);
+      } else {
+          System.out.println("Cola llena, no se agregó el " + i);
+      }
+  }
+  // Solo se agregarán los primeros 5 números.
+
+--------------------------------------------------------------
+5d. Vaciar la cola y contar elementos
+--------------------------------------------------------------
+
+  ColaCircularArray<Double> cola = new ColaCircularArray<>(100);
+  // ... agregar muchos elementos ...
+  int cantidad = cola.tamano();
+  cola.anula();
+  System.out.println("Se eliminaron " + cantidad + " elementos");
+
+
+6. DIFERENCIAS CON ColaCircularListaEnlazada
+================================================================================
+
+  Característica                ColaCircularArray               ColaCircularListaEnlazada
+  ─────────────────────────────────────────────────────────────────────────────────────
+  Implementación interna        Arreglo (tamaño fijo)           Nodos enlazados (dinámico)
+  Capacidad máxima              Se define al crear (no crece)   Ilimitada (sujeta a memoria)
+  poneEnCola cuando llena       Devuelve false                  Siempre true (crece)
+  Memoria                       100% ocupada si llena           Se ajusta según los elementos
+  Velocidad de acceso           O(1) directo por índice        O(1) con punteros
+  Método estaLlena()            Sí (útil para saber si llena)   No tiene (nunca se llena)
+  Redimensionamiento            No automático (pero hay método privado sin usar) Automático (agrega nodos)
+
+En la práctica: usa ColaCircularArray cuando sepas el máximo de elementos y
+quieras ahorrar memoria (sin nodos extra). Usa la versión con lista enlazada
+cuando no sepas el tamaño máximo y necesites que crezca sin límite.
+
+
+7. RESUMEN RÁPIDO DE MÉTODOS PÚBLICOS
+================================================================================
+
+  Método                      Qué devuelve / qué hace
+  ─────────────────────────────────────────────────────────────────────────────
+  Constructor(int capacidad)  Crea la cola con esa capacidad máxima.
+                              Lanza IllegalArgumentException si capacidad ≤ 0.
+
+  poneEnCola(T dato)          boolean → true si agregó, false si null o llena.
+
+  quitaDeCola()               T → el frente. Lanza NoSuchElementException si vacía.
+
+  frente()                    T → el frente sin sacar. Lanza excepción si vacía.
+
+  vacia()                     boolean → true si no hay elementos.
+
+  tamano()                    int → cantidad actual de elementos.
+
+  anula()                     void → vacía la cola (capacidad no cambia).
+
+  estaLlena()                 boolean → true si tamano == capacidad.
+
+  (Métodos heredados de ListaEnlazada) → NO LOS USES, rompen la lógica.
+
+
+8. REGLAS DE ORO PARA NO ROMPER NADA
+================================================================================
+
+  1. Siempre revisa vacia() antes de quitaDeCola() o frente().
+  2. Si quieres agregar, revisa estaLlena() antes (o captura el false de poneEnCola).
+  3. No uses métodos heredados de ListaEnlazada (agregar, quitar, obtener, etc.)
+  4. El tamaño máximo se fija al crear y NO crece automáticamente.
+  5. Si necesitas que crezca, modifica el código para que cambioTamano() se llame
+     cuando esté llena, o mejor usa ColaCircularListaEnlazada.
+  6. Los elementos null no se permiten (poneEnCola devuelve false si pones null).
+
+================================================================================
+  FIN DEL MANUAL
+================================================================================

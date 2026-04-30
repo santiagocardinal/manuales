@@ -1,0 +1,13 @@
+EJERCICIO 2 — Invertir pila SIN usar otra estructura explícita (recursivo)
+Implementar:
+
+Un método que invierta la pila usando recursividad pura.
+
+✔ Restricciones:
+no usar otra pila auxiliar
+solo llamadas recursivas
+
+Claves:
+sacar elemento
+invertir resto
+insertar en el fondo
